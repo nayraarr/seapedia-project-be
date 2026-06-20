@@ -1,9 +1,6 @@
 package id.seapedia.seapediaprojectbe.controller;
 
-import id.seapedia.seapediaprojectbe.dto.auth.AuthResponse;
-import id.seapedia.seapediaprojectbe.dto.auth.LoginRequest;
-import id.seapedia.seapediaprojectbe.dto.auth.RegisterRequest;
-import id.seapedia.seapediaprojectbe.dto.auth.SelectRoleRequest;
+import id.seapedia.seapediaprojectbe.dto.auth.*;
 import id.seapedia.seapediaprojectbe.dto.common.ApiResponse;
 import id.seapedia.seapediaprojectbe.security.CustomUserDetails;
 import id.seapedia.seapediaprojectbe.service.AuthService;
