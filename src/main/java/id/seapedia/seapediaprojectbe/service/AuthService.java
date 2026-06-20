@@ -1,9 +1,6 @@
 package id.seapedia.seapediaprojectbe.service;
 
-import id.seapedia.seapediaprojectbe.dto.auth.AuthResponse;
-import id.seapedia.seapediaprojectbe.dto.auth.LoginRequest;
-import id.seapedia.seapediaprojectbe.dto.auth.RegisterRequest;
-import id.seapedia.seapediaprojectbe.dto.auth.SelectRoleRequest;
+import id.seapedia.seapediaprojectbe.dto.auth.*;
 
 import java.util.UUID;
 

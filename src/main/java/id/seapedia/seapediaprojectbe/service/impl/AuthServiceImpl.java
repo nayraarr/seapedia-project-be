@@ -1,8 +1,6 @@
 package id.seapedia.seapediaprojectbe.service.impl;
 
-import id.seapedia.seapediaprojectbe.dto.auth.AuthResponse;
-import id.seapedia.seapediaprojectbe.dto.auth.RegisterRequest;
-import id.seapedia.seapediaprojectbe.dto.auth.SelectRoleRequest;
+import id.seapedia.seapediaprojectbe.dto.auth.*;
 import id.seapedia.seapediaprojectbe.exception.BadRequestException;
 import id.seapedia.seapediaprojectbe.exception.ResourceNotFoundException;
 import id.seapedia.seapediaprojectbe.model.RoleType;
@@ -76,6 +74,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public AuthResponse login(LoginRequest request) {
+        return null;
+    }
+
+    @Override
     public AuthResponse selectRole(SelectRoleRequest request, UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -98,5 +101,10 @@ public class AuthServiceImpl implements AuthService {
                 .activeRole(request.getRole())
                 .requiresRoleSelection(false)
                 .build();
+    }
+
+    @Override
+    public UserProfileResponse getProfile(UUID userId) {
+        return null;
     }
 }
