@@ -15,6 +15,9 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -113,9 +117,63 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse login(LoginRequest request) {
         try {
             log.info("[login] 🚀 entry: username={}", request.getUsername());
-            log.warn("[login] ⚠️ not implemented: username={}", request.getUsername());
-            log.info("[login] ✅ exit: username={} result={}", request.getUsername(), null);
-            return null;
+
+            log.debug("[login] 🔍 authenticating credentials: username={}", request.getUsername());
+            try {
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                request.getUsername(),
+                                request.getPassword()
+                        )
+                );
+            } catch (BadCredentialsException e) {
+                log.warn("[login] ⚠️ invalid credentials: username={}", request.getUsername());
+                throw new BadRequestException("Invalid username or password");
+            }
+
+            log.debug("[login] 🔍 loading user: username={}", request.getUsername());
+            User user = userRepository.findByUsername(request.getUsername())
+                    .orElseThrow(() -> {
+                        log.warn("[login] ⚠️ user not found: username={}", request.getUsername());
+                        return new ResourceNotFoundException("User not found");
+                    });
+
+            List<String> roles = user.getRoles().stream()
+                    .map(r -> r.getRole().name()).toList();
+
+            // kalau admin, langsung set activeRole ADMIN
+            String activeRole;
+            boolean requiresRoleSelection;
+
+            if (user.getIsAdmin()) {
+                activeRole = "ADMIN";
+                requiresRoleSelection = false;
+                log.debug("[login] 🔍 admin user detected: userId={}", user.getId());
+            } else if (roles.size() == 1) {
+                activeRole = roles.get(0);
+                requiresRoleSelection = false;
+            } else {
+                activeRole = null;
+                requiresRoleSelection = true;
+            }
+
+            String token = jwtTokenProvider.generateToken(user, activeRole);
+            log.info("[login] ✅ token generated: userId={} activeRole={} requiresRoleSelection={}",
+                    user.getId(), activeRole, requiresRoleSelection);
+
+            AuthResponse response = AuthResponse.builder()
+                    .token(token)
+                    .username(user.getUsername())
+                    .roles(roles)
+                    .activeRole(activeRole)
+                    .requiresRoleSelection(requiresRoleSelection)
+                    .build();
+
+            log.info("[login] ✅ exit: userId={} username={} activeRole={}", user.getId(), user.getUsername(), activeRole);
+            return response;
+
+        } catch (BadRequestException | ResourceNotFoundException e) {
+            throw e;
         } catch (RuntimeException e) {
             log.error("[login] ❌ unexpected error: message={}", e.getMessage());
             throw e;
@@ -170,9 +228,31 @@ public class AuthServiceImpl implements AuthService {
     public UserProfileResponse getProfile(UUID userId) {
         try {
             log.info("[getProfile] 🚀 entry: userId={}", userId);
-            log.warn("[getProfile] ⚠️ not implemented: userId={}", userId);
-            log.info("[getProfile] ✅ exit: userId={} result={}", userId, null);
-            return null;
+
+            log.debug("[getProfile] 🔍 loading user: userId={}", userId);
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> {
+                        log.warn("[getProfile] ⚠️ user not found: userId={}", userId);
+                        return new ResourceNotFoundException("User not found");
+                    });
+
+            List<String> roles = user.getRoles().stream()
+                    .map(r -> r.getRole().name()).toList();
+
+            UserProfileResponse response = UserProfileResponse.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .isAdmin(user.getIsAdmin())
+                    .roles(roles)
+                    .createdAt(user.getCreatedAt())
+                    .build();
+
+            log.info("[getProfile] ✅ exit: userId={} username={} roles={}", userId, user.getUsername(), roles);
+            return response;
+
+        } catch (ResourceNotFoundException e) {
+            throw e;
         } catch (RuntimeException e) {
             log.error("[getProfile] ❌ unexpected error: message={}", e.getMessage());
             throw e;
