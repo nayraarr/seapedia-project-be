@@ -35,6 +35,7 @@ public class User {
     @Column(nullable = false)
     private Boolean isAdmin = false;
 
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<UserRole> roles = new ArrayList<>();
 
