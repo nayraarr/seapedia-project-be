@@ -10,6 +10,8 @@ import id.seapedia.seapediaprojectbe.repository.UserRepository;
 import id.seapedia.seapediaprojectbe.repository.UserRoleRepository;
 import id.seapedia.seapediaprojectbe.security.JwtTokenProvider;
 import id.seapedia.seapediaprojectbe.service.AuthService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,9 @@ public class AuthServiceImpl implements AuthService {
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
     public AuthResponse register(RegisterRequest request) {
@@ -66,9 +71,13 @@ public class AuthServiceImpl implements AuthService {
                 userRoleRepository.save(userRole);
             }
             log.info("[register] ✅ roles assigned: userId={} roles={}", user.getId(), request.getRoles());
+            userRoleRepository.flush();
+            userRepository.flush();
 
-            log.debug("[register] 🔍 loading saved user with roles: userId={}", user.getId());
+            entityManager.clear();
+
             user = userRepository.findById(user.getId()).orElseThrow();
+            log.info("[register] 🔍 roles after reload: {}", user.getRoles());
 
             String activeRole = user.getRoles().size() == 1
                     ? user.getRoles().get(0).getRole().name()
