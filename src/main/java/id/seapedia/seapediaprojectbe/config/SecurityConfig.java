@@ -94,6 +94,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/reviews").permitAll()
 
                         // role-based endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -101,8 +102,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/buyer/**").hasRole("BUYER")
                         .requestMatchers("/api/driver/**").hasRole("DRIVER")
 
-                        // review POST hanya untuk yang sudah login
-                        .requestMatchers(HttpMethod.POST, "/api/reviews").authenticated()
 
                         // semua endpoint lain butuh login
                         .anyRequest().authenticated()
