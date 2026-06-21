@@ -9,4 +9,5 @@ public interface AuthService {
     AuthResponse login(LoginRequest request);
     AuthResponse selectRole(SelectRoleRequest request, UUID userId);
     UserProfileResponse getProfile(UUID userId);
+    FinancialSummaryResponse getFinancialSummary(UUID userId);
 }

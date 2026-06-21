@@ -258,4 +258,17 @@ public class AuthServiceImpl implements AuthService {
             throw e;
         }
     }
+
+    @Override
+    public FinancialSummaryResponse getFinancialSummary(UUID userId) {
+        log.info("[getFinancialSummary] 🚀 entry: userId={}", userId);
+
+        FinancialSummaryResponse response = FinancialSummaryResponse.builder()
+                .walletBalance(0L)
+                .sellerIncome(0L)
+                .driverEarnings(0L)
+                .build();
+        log.info("[getFinancialSummary] ✅ exit: userId={}", userId);
+        return response;
+    }
 }
