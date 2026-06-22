@@ -17,6 +17,7 @@ public class StoreResponse {
     private String name;
     private String description;
     private UUID ownerId;
+    private String ownerUsername;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

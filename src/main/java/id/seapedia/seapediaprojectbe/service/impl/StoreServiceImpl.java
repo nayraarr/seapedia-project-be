@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import id.seapedia.seapediaprojectbe.model.User;
+import id.seapedia.seapediaprojectbe.repository.UserRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +23,7 @@ import java.util.UUID;
 public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -109,11 +112,16 @@ public class StoreServiceImpl implements StoreService {
     }
 
     private StoreResponse toResponse(Store store) {
+        String ownerUsername = userRepository.findById(store.getOwnerId())
+                .map(User::getUsername)
+                .orElse("Unknown");
+
         return StoreResponse.builder()
                 .id(store.getId())
                 .name(store.getName())
                 .description(store.getDescription())
                 .ownerId(store.getOwnerId())
+                .ownerUsername(ownerUsername) // <-- tambahan
                 .createdAt(store.getCreatedAt())
                 .updatedAt(store.getUpdatedAt())
                 .build();
