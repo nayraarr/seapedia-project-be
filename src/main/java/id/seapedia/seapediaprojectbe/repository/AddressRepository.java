@@ -13,4 +13,5 @@ public interface AddressRepository extends JpaRepository<Address, UUID> {
     List<Address> findByUserId(UUID userId);
     Optional<Address> findByIdAndUserId(UUID id, UUID userId);
     List<Address> findByUserIdAndIsDefaultTrue(UUID userId);
+    Optional<Address> findFirstByUserIdAndIsDefaultTrue(UUID userId);
 }
