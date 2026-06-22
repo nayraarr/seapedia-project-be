@@ -28,7 +28,7 @@ public class Store {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "owner_id", nullable = false)
     private UUID ownerId;
 
     @CreationTimestamp

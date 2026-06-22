@@ -34,4 +34,9 @@ public class ProductController {
         log.info("[GET /api/products/{}] ✅ returning product name={}", id, data.getName());
         return ResponseEntity.ok(ApiResponse.success("Product fetched", data));
     }
+
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getProductsByStore(@PathVariable UUID storeId) {
+        return ResponseEntity.ok(ApiResponse.success("Products fetched", productService.getProductsByStore(storeId)));
+    }
 }
