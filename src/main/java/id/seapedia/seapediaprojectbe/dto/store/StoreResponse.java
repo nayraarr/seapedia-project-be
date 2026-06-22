@@ -1,4 +1,4 @@
-package id.seapedia.seapediaprojectbe.dto.product;
+package id.seapedia.seapediaprojectbe.dto.store;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,14 +12,12 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductResponse {
+public class StoreResponse {
     private UUID id;
     private String name;
     private String description;
-    private Long price;
-    private Integer stock;
-    private UUID storeId;
-    private String storeName;
+    private UUID ownerId;
+    private String ownerUsername;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

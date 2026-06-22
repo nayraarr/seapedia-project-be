@@ -95,6 +95,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/reviews").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/stores/**").permitAll()
 
                         // role-based endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

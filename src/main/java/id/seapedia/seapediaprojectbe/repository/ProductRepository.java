@@ -7,10 +7,13 @@ import org.springframework.stereotype.Repository;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
     List<Product> findByStockGreaterThan(int stock);
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
+    List<Product> findByStoreId(UUID storeId);
+    Optional<Product> findByIdAndStoreId(UUID id, UUID storeId);
 }

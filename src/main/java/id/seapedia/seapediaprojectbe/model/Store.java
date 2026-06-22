@@ -12,34 +12,28 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "products")
+@Table(name = "stores")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product {
+public class Store {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String name;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private Long price;
-
-    @Column(nullable = false)
-    private Integer stock;
+    @Column(name = "owner_id", nullable = false)
+    private UUID ownerId;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", nullable = false)
-    private Store store;
 }
