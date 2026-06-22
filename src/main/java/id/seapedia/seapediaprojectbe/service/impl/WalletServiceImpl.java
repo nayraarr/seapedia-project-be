@@ -35,6 +35,15 @@ public class WalletServiceImpl implements WalletService {
                 });
     }
 
+    private Wallet getOrCreateWalletForUpdate(UUID userId) {
+        return walletRepository.findByUserIdForUpdate(userId)
+                .orElseGet(() -> {
+                    log.info("[getOrCreateWalletForUpdate] creating wallet for userId={}", userId);
+                    Wallet w = Wallet.builder().userId(userId).balance(0L).build();
+                    return walletRepository.save(w);
+                });
+    }
+
     private WalletResponse toResponse(Wallet wallet) {
         return WalletResponse.builder()
                 .id(wallet.getId())
@@ -68,7 +77,7 @@ public class WalletServiceImpl implements WalletService {
     public WalletResponse topUp(UUID userId, TopUpRequest request) {
         log.info("[topUp] 🚀 entry: userId={} amount={}", userId, request.getAmount());
 
-        Wallet wallet = getOrCreateWallet(userId);
+        Wallet wallet = getOrCreateWalletForUpdate(userId);
         wallet.setBalance(wallet.getBalance() + request.getAmount());
         wallet = walletRepository.save(wallet);
 
@@ -100,7 +109,7 @@ public class WalletServiceImpl implements WalletService {
     @Transactional
     public void deductBalance(UUID userId, Long amount, String description) {
         log.info("[deductBalance] 🚀 entry: userId={} amount={}", userId, amount);
-        Wallet wallet = getOrCreateWallet(userId);
+        Wallet wallet = getOrCreateWalletForUpdate(userId);
 
         if (wallet.getBalance() < amount) {
             log.warn("[deductBalance] ⚠️ insufficient balance: balance={} needed={}",
