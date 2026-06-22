@@ -45,4 +45,11 @@ public class AuthController {
         UserProfileResponse data = authService.getProfile(userDetails.getUserId());
         return ResponseEntity.ok(ApiResponse.success("Profile fetched", data));
     }
+
+    @GetMapping("/me/summary")
+    public ResponseEntity<ApiResponse<FinancialSummaryResponse>> getFinancialSummary(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        FinancialSummaryResponse data = authService.getFinancialSummary(userDetails.getUserId());
+        return ResponseEntity.ok(ApiResponse.success("Financial summary fetched", data));
+    }
 }

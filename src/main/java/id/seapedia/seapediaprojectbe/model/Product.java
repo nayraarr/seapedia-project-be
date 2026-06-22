@@ -28,7 +28,7 @@ public class Product {
     private String description;
 
     @Column(nullable = false)
-    private Long price; // dalam rupiah
+    private Long price;
 
     @Column(nullable = false)
     private Integer stock;
