@@ -1,9 +1,8 @@
 package id.seapedia.seapediaprojectbe.service;
 
-import id.seapedia.seapediaprojectbe.dto.order.CheckoutRequest;
-import id.seapedia.seapediaprojectbe.dto.order.CheckoutSummaryResponse;
-import id.seapedia.seapediaprojectbe.dto.order.OrderDetailResponse;
-import id.seapedia.seapediaprojectbe.dto.order.OrderSummaryResponse;
+import id.seapedia.seapediaprojectbe.dto.discount.DiscountValidationResponse;
+import id.seapedia.seapediaprojectbe.dto.order.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,4 +14,10 @@ public interface OrderService {
     OrderDetailResponse getBuyerOrderDetail(UUID buyerId, UUID orderId);
     List<OrderSummaryResponse> getSellerIncomingOrders(UUID sellerId);
     OrderDetailResponse getSellerOrderDetail(UUID sellerId, UUID orderId);
+    OrderDetailResponse processOrder(UUID sellerId, UUID orderId);
+    BuyerSpendingReportResponse getBuyerSpendingReport(UUID buyerId);
+    SellerIncomeReportResponse getSellerIncomeReport(UUID sellerId);
+
+    @Transactional(readOnly = true)
+    DiscountValidationResponse validateDiscountCode(UUID buyerId, String code);
 }

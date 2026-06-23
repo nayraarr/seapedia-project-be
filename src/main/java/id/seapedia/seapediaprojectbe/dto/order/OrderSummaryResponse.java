@@ -1,6 +1,7 @@
 package id.seapedia.seapediaprojectbe.dto.order;
 
 import id.seapedia.seapediaprojectbe.model.DeliveryMethod;
+import id.seapedia.seapediaprojectbe.model.DiscountSource;
 import id.seapedia.seapediaprojectbe.model.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,10 @@ public class OrderSummaryResponse {
     private OrderStatus status;
     private String statusLabel;
     private Long subtotal;
+    private String discountCode;
+    private DiscountSource discountSource;
+    private String discountLabel;
+    private Long discountAmount;
     private Long deliveryFee;
     private Integer taxRatePercent;
     private Long taxAmount;

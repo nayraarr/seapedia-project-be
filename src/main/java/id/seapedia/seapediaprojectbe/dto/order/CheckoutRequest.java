@@ -18,4 +18,6 @@ public class CheckoutRequest {
 
     @NotNull(message = "Delivery method is required")
     private DeliveryMethod deliveryMethod;
+
+    private String discountCode;
 }

@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum OrderStatus {
     SEDANG_DIKEMAS("Sedang Dikemas"),
+    MENUNGGU_PENGIRIM("Menunggu Pengirim"),
     DIPROSES("Diproses"),
     DIKIRIM("Dikirim"),
     SELESAI("Selesai"),

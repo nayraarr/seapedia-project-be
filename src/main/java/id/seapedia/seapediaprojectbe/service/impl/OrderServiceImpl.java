@@ -1,5 +1,6 @@
 package id.seapedia.seapediaprojectbe.service.impl;
 
+import id.seapedia.seapediaprojectbe.dto.discount.DiscountValidationResponse;
 import id.seapedia.seapediaprojectbe.dto.order.*;
 import id.seapedia.seapediaprojectbe.exception.BadRequestException;
 import id.seapedia.seapediaprojectbe.exception.ResourceNotFoundException;
@@ -7,14 +8,15 @@ import id.seapedia.seapediaprojectbe.model.*;
 import id.seapedia.seapediaprojectbe.repository.*;
 import id.seapedia.seapediaprojectbe.service.OrderService;
 import id.seapedia.seapediaprojectbe.service.WalletService;
+import id.seapedia.seapediaprojectbe.service.DiscountResolution;
+import id.seapedia.seapediaprojectbe.service.DiscountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -33,6 +35,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepository;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final UserRepository userRepository;
+    private final DiscountService discountService;
 
     private record OrderComputation(
             Cart cart,
@@ -40,6 +43,7 @@ public class OrderServiceImpl implements OrderService {
             Address address,
             List<CartItem> items,
             long subtotal,
+            DiscountResolution discount,
             long deliveryFee,
             long taxBase,
             long taxAmount,
@@ -96,10 +100,13 @@ public class OrderServiceImpl implements OrderService {
             subtotal += product.getPrice() * cartItem.getQuantity();
         }
 
+        DiscountResolution discount = discountService.resolve(request.getDiscountCode(), subtotal);
+
+        long discountAmount = discount.discountAmount();
         long deliveryFee = request.getDeliveryMethod().getFee();
-        long taxBase = subtotal;
+        long taxBase = subtotal - discountAmount;
         long taxAmount = Math.round(taxBase * TAX_RATE_PERCENT / 100.0);
-        long totalAmount = subtotal + deliveryFee + taxAmount;
+        long totalAmount = taxBase + deliveryFee + taxAmount;
 
         long walletBalance = walletRepository.findByUserId(buyerId)
                 .map(Wallet::getBalance)
@@ -111,6 +118,7 @@ public class OrderServiceImpl implements OrderService {
                 address,
                 items,
                 subtotal,
+                discount,
                 deliveryFee,
                 taxBase,
                 taxAmount,
@@ -149,6 +157,10 @@ public class OrderServiceImpl implements OrderService {
                 .deliveryMethod(method)
                 .deliveryMethodLabel(method.getLabel())
                 .subtotal(computation.subtotal())
+                .discountCode(computation.discount().code())
+                .discountSource(computation.discount().source())
+                .discountLabel(computation.discount().label())
+                .discountAmount(computation.discount().discountAmount())
                 .deliveryFee(computation.deliveryFee())
                 .taxRatePercent(TAX_RATE_PERCENT)
                 .taxBase(computation.taxBase())
@@ -172,6 +184,9 @@ public class OrderServiceImpl implements OrderService {
                 .status(order.getStatus())
                 .statusLabel(order.getStatus().getLabel())
                 .subtotal(order.getSubtotal())
+                .discountCode(order.getDiscountCode())
+                .discountSource(order.getDiscountSource())
+                .discountAmount(order.getDiscountAmount())
                 .deliveryFee(order.getDeliveryFee())
                 .taxRatePercent(order.getTaxRatePercent())
                 .taxAmount(order.getTaxAmount())
@@ -224,6 +239,9 @@ public class OrderServiceImpl implements OrderService {
                 .status(order.getStatus())
                 .statusLabel(order.getStatus().getLabel())
                 .subtotal(order.getSubtotal())
+                .discountCode(order.getDiscountCode())
+                .discountSource(order.getDiscountSource())
+                .discountAmount(order.getDiscountAmount())
                 .deliveryFee(order.getDeliveryFee())
                 .taxRatePercent(order.getTaxRatePercent())
                 .taxBase(order.getTaxBase())
@@ -269,6 +287,8 @@ public class OrderServiceImpl implements OrderService {
             throw new BadRequestException("Saldo wallet tidak mencukupi");
         }
 
+        discountService.consume(computation.discount());
+
         Wallet wallet = walletRepository.findByUserIdForUpdate(buyerId)
                 .orElseGet(() -> walletRepository.save(Wallet.builder().userId(buyerId).balance(0L).build()));
         long balanceBefore = wallet.getBalance();
@@ -307,6 +327,9 @@ public class OrderServiceImpl implements OrderService {
                 .deliveryMethod(request.getDeliveryMethod())
                 .status(OrderStatus.SEDANG_DIKEMAS)
                 .subtotal(computation.subtotal())
+                .discountCode(computation.discount().code())
+                .discountSource(computation.discount().source())
+                .discountAmount(computation.discount().discountAmount())
                 .deliveryFee(computation.deliveryFee())
                 .taxRatePercent(TAX_RATE_PERCENT)
                 .taxBase(computation.taxBase())
@@ -379,5 +402,136 @@ public class OrderServiceImpl implements OrderService {
     public OrderDetailResponse getSellerOrderDetail(UUID sellerId, UUID orderId) {
         log.info("[getSellerOrderDetail] sellerId={} orderId={}", sellerId, orderId);
         return toDetail(getOrderForSeller(sellerId, orderId));
+    }
+
+    @Override
+    @Transactional
+    public OrderDetailResponse processOrder(UUID sellerId, UUID orderId) {
+        log.info("[processOrder] sellerId={} orderId={}", sellerId, orderId);
+
+        Order order = getOrderForSeller(sellerId, orderId);
+
+        if (order.getStatus() != OrderStatus.SEDANG_DIKEMAS) {
+            throw new BadRequestException(
+                    "Order tidak bisa diproses dari status " + order.getStatus().getLabel());
+        }
+
+        order.setStatus(OrderStatus.MENUNGGU_PENGIRIM);
+        Order savedOrder = orderRepository.save(order);
+
+        orderStatusHistoryRepository.save(OrderStatusHistory.builder()
+                .order(savedOrder)
+                .status(OrderStatus.MENUNGGU_PENGIRIM)
+                .note("Pesanan diproses oleh seller, menunggu pengirim mengambil pesanan")
+                .build());
+
+        log.info("[processOrder] orderId={} status -> MENUNGGU_PENGIRIM", orderId);
+        return toDetail(savedOrder);
+    }
+
+    private List<StatusCountResponse> buildStatusBreakdown(List<Order> orders) {
+        Map<OrderStatus, Long> counts = orders.stream()
+                .collect(Collectors.groupingBy(Order::getStatus, LinkedHashMap::new, Collectors.counting()));
+
+        return Arrays.stream(OrderStatus.values())
+                .filter(counts::containsKey)
+                .map(status -> StatusCountResponse.builder()
+                        .status(status.name())
+                        .statusLabel(status.getLabel())
+                        .count(counts.get(status).intValue())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BuyerSpendingReportResponse getBuyerSpendingReport(UUID buyerId) {
+        log.info("[getBuyerSpendingReport] buyerId={}", buyerId);
+        List<Order> orders = orderRepository.findByBuyerIdOrderByCreatedAtDesc(buyerId);
+
+        List<Order> validOrders = orders.stream()
+                .filter(o -> o.getStatus() != OrderStatus.DIBATALKAN)
+                .toList();
+
+        long totalSpent = validOrders.stream().mapToLong(Order::getTotalAmount).sum();
+        long totalDiscountSaved = validOrders.stream().mapToLong(Order::getDiscountAmount).sum();
+        long totalDeliveryFee = validOrders.stream().mapToLong(Order::getDeliveryFee).sum();
+        long totalTax = validOrders.stream().mapToLong(Order::getTaxAmount).sum();
+        int cancelledOrders = (int) (orders.size() - validOrders.size());
+
+        List<OrderSummaryResponse> recentOrders = orders.stream()
+                .limit(5)
+                .map(this::toSummary)
+                .toList();
+
+        return BuyerSpendingReportResponse.builder()
+                .totalOrders(orders.size())
+                .cancelledOrders(cancelledOrders)
+                .totalSpent(totalSpent)
+                .totalDiscountSaved(totalDiscountSaved)
+                .totalDeliveryFee(totalDeliveryFee)
+                .totalTax(totalTax)
+                .statusBreakdown(buildStatusBreakdown(orders))
+                .recentOrders(recentOrders)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SellerIncomeReportResponse getSellerIncomeReport(UUID sellerId) {
+        log.info("[getSellerIncomeReport] sellerId={}", sellerId);
+        Store store = storeRepository.findByOwnerId(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
+
+        List<Order> orders = orderRepository.findByStoreIdOrderByCreatedAtDesc(store.getId());
+
+        List<Order> validOrders = orders.stream()
+                .filter(o -> o.getStatus() != OrderStatus.DIBATALKAN)
+                .toList();
+
+        long totalIncome = validOrders.stream().mapToLong(Order::getTotalAmount).sum();
+        long totalDiscountGiven = validOrders.stream().mapToLong(Order::getDiscountAmount).sum();
+
+        int incomingOrders = (int) orders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.SEDANG_DIKEMAS)
+                .count();
+        int cancelledOrders = (int) orders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.DIBATALKAN)
+                .count();
+        int processedOrders = orders.size() - incomingOrders - cancelledOrders;
+
+        List<OrderSummaryResponse> recentOrders = orders.stream()
+                .limit(5)
+                .map(this::toSummary)
+                .toList();
+
+        return SellerIncomeReportResponse.builder()
+                .totalOrders(orders.size())
+                .incomingOrders(incomingOrders)
+                .processedOrders(processedOrders)
+                .cancelledOrders(cancelledOrders)
+                .totalIncome(totalIncome)
+                .totalDiscountGiven(totalDiscountGiven)
+                .statusBreakdown(buildStatusBreakdown(orders))
+                .recentOrders(recentOrders)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public DiscountValidationResponse validateDiscountCode(UUID buyerId, String code) {
+        log.info("[validateDiscountCode] buyerId={} code={}", buyerId, code);
+        Cart cart = cartRepository.findByBuyerId(buyerId)
+                .orElseThrow(() -> new BadRequestException("Cart is empty"));
+
+        if (cart.getItems().isEmpty()) {
+            throw new BadRequestException("Cart is empty");
+        }
+
+        long subtotal = cart.getItems().stream()
+                .mapToLong(item -> item.getProduct().getPrice() * item.getQuantity())
+                .sum();
+
+        return discountService.validate(code, subtotal);
     }
 }

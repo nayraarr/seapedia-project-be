@@ -1,6 +1,9 @@
 package id.seapedia.seapediaprojectbe.controller;
 
 import id.seapedia.seapediaprojectbe.dto.common.ApiResponse;
+import id.seapedia.seapediaprojectbe.dto.discount.DiscountValidateRequest;
+import id.seapedia.seapediaprojectbe.dto.discount.DiscountValidationResponse;
+import id.seapedia.seapediaprojectbe.dto.order.BuyerSpendingReportResponse;
 import id.seapedia.seapediaprojectbe.dto.order.CheckoutRequest;
 import id.seapedia.seapediaprojectbe.dto.order.CheckoutSummaryResponse;
 import id.seapedia.seapediaprojectbe.dto.order.OrderDetailResponse;
@@ -25,6 +28,16 @@ import java.util.UUID;
 public class BuyerOrderController {
 
     private final OrderService orderService;
+
+    @PostMapping("/discounts/validate")
+    @PreAuthorize("hasRole('BUYER')")
+    public ResponseEntity<ApiResponse<DiscountValidationResponse>> validateDiscountCode(
+            @Valid @RequestBody DiscountValidateRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        DiscountValidationResponse data =
+                orderService.validateDiscountCode(userDetails.getUserId(), request.getCode());
+        return ResponseEntity.ok(ApiResponse.success("Discount code validated", data));
+    }
 
     @PostMapping("/checkout/preview")
     @PreAuthorize("hasRole('BUYER')")
@@ -59,5 +72,13 @@ public class BuyerOrderController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         OrderDetailResponse data = orderService.getBuyerOrderDetail(userDetails.getUserId(), orderId);
         return ResponseEntity.ok(ApiResponse.success("Order detail fetched", data));
+    }
+
+    @GetMapping("/orders/report")
+    @PreAuthorize("hasRole('BUYER')")
+    public ResponseEntity<ApiResponse<BuyerSpendingReportResponse>> getSpendingReport(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        BuyerSpendingReportResponse data = orderService.getBuyerSpendingReport(userDetails.getUserId());
+        return ResponseEntity.ok(ApiResponse.success("Spending report fetched", data));
     }
 }
