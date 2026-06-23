@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum OrderStatus {
     SEDANG_DIKEMAS("Sedang Dikemas"),
     MENUNGGU_PENGIRIM("Menunggu Pengirim"),
-    DIKIRIM("Sedang Dikirim"),
+    SEDANG_DIKIRIM("Sedang Dikirim"),
     SELESAI("Pesanan Selesai"),
     DIBATALKAN("Dibatalkan");
 
