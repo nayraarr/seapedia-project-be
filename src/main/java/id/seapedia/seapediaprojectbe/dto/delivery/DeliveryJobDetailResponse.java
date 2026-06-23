@@ -1,7 +1,9 @@
-package id.seapedia.seapediaprojectbe.dto.order;
+package id.seapedia.seapediaprojectbe.dto.delivery;
 
+import id.seapedia.seapediaprojectbe.dto.order.AddressSnapshotResponse;
+import id.seapedia.seapediaprojectbe.dto.order.OrderItemResponse;
+import id.seapedia.seapediaprojectbe.dto.order.OrderStatusHistoryResponse;
 import id.seapedia.seapediaprojectbe.model.DeliveryMethod;
-import id.seapedia.seapediaprojectbe.model.DiscountSource;
 import id.seapedia.seapediaprojectbe.model.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,9 +18,9 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDetailResponse {
+public class DeliveryJobDetailResponse {
+    private UUID deliveryJobId;
     private UUID orderId;
-    private UUID buyerId;
     private String buyerUsername;
     private UUID storeId;
     private String storeName;
@@ -28,22 +30,11 @@ public class OrderDetailResponse {
     private OrderStatus status;
     private String statusLabel;
     private Long subtotal;
-    private String discountCode;
-    private DiscountSource discountSource;
-    private String discountLabel;
-    private Long discountAmount;
     private Long deliveryFee;
     private Integer taxRatePercent;
-    private Long taxBase;
     private Long taxAmount;
     private Long totalAmount;
-    private Long walletBalanceBefore;
-    private Long walletBalanceAfter;
     private List<OrderItemResponse> items;
     private List<OrderStatusHistoryResponse> statusHistory;
-    private UUID driverAssignedId;
-    private LocalDateTime deliveryTakenAt;
-    private LocalDateTime deliveryCompletedAt;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime availableSince;
 }

@@ -36,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final UserRepository userRepository;
     private final DiscountService discountService;
+    private final DeliveryJobRepository deliveryJobRepository;
 
     private record OrderComputation(
             Cart cart,
@@ -227,6 +228,8 @@ public class OrderServiceImpl implements OrderService {
                 .postalCode(order.getPostalCode())
                 .build();
 
+        Optional<DeliveryJob> deliveryJobOpt = deliveryJobRepository.findByOrderId(order.getId());
+
         return OrderDetailResponse.builder()
                 .orderId(order.getId())
                 .buyerId(order.getBuyerId())
@@ -251,6 +254,9 @@ public class OrderServiceImpl implements OrderService {
                 .walletBalanceAfter(order.getWalletBalanceAfter())
                 .items(items)
                 .statusHistory(history)
+                .driverAssignedId(deliveryJobOpt.map(DeliveryJob::getDriverId).orElse(null))
+                .deliveryTakenAt(deliveryJobOpt.map(DeliveryJob::getTakenAt).orElse(null))
+                .deliveryCompletedAt(deliveryJobOpt.map(DeliveryJob::getCompletedAt).orElse(null))
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .build();
@@ -424,6 +430,12 @@ public class OrderServiceImpl implements OrderService {
                 .status(OrderStatus.MENUNGGU_PENGIRIM)
                 .note("Pesanan diproses oleh seller, menunggu pengirim mengambil pesanan")
                 .build());
+
+        if (deliveryJobRepository.findByOrderId(savedOrder.getId()).isEmpty()) {
+            deliveryJobRepository.save(DeliveryJob.builder()
+                    .order(savedOrder)
+                    .build());
+        }
 
         log.info("[processOrder] orderId={} status -> MENUNGGU_PENGIRIM", orderId);
         return toDetail(savedOrder);
