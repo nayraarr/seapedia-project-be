@@ -64,7 +64,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         log.info("[takeJob] jobId={} driverId={}", jobId, driverId);
 
         DeliveryJob job = deliveryJobRepository
-                .findByIdAndOrder_Status(jobId, OrderStatus.MENUNGGU_PENGIRIM)
+                .findByIdAndOrder_StatusForUpdate(jobId, OrderStatus.MENUNGGU_PENGIRIM)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery job not found or no longer available"));
 
         if (job.getDriverId() != null) {
@@ -217,5 +217,31 @@ public class DeliveryServiceImpl implements DeliveryService {
                 .statusHistory(history)
                 .availableSince(job.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public DeliveryJobDetailResponse completeJob(UUID jobId, UUID driverId) {
+        log.info("[completeJob] jobId={} driverId={}", jobId, driverId);
+
+        DeliveryJob job = deliveryJobRepository
+                .findByIdAndDriverIdAndOrder_Status(jobId, driverId, OrderStatus.DIKIRIM)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Active delivery job not found or not owned by this driver"));
+
+        Order order = job.getOrder();
+        order.setStatus(OrderStatus.SELESAI);
+        orderRepository.save(order);
+
+        orderStatusHistoryRepository.save(OrderStatusHistory.builder()
+                .order(order)
+                .status(OrderStatus.SELESAI)
+                .note("Pesanan selesai diantarkan oleh driver")
+                .build());
+
+        job.setCompletedAt(LocalDateTime.now());
+        DeliveryJob saved = deliveryJobRepository.save(job);
+
+        return toDetail(saved);
     }
 }

@@ -14,4 +14,5 @@ public interface DeliveryService {
     List<DeliveryJobSummaryResponse> getActiveJobs(UUID driverId);
     List<DeliveryJobSummaryResponse> getJobHistory(UUID driverId);
     DriverIncomeReportResponse getDriverReport(UUID driverId);
+    DeliveryJobDetailResponse completeJob(UUID jobId, UUID driverId);
 }

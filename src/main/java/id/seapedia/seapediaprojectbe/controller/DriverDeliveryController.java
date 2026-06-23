@@ -69,4 +69,13 @@ public class DriverDeliveryController {
         DeliveryJobDetailResponse data = deliveryService.takeJob(jobId, userDetails.getUserId());
         return ResponseEntity.ok(ApiResponse.success("Delivery job taken successfully", data));
     }
+
+    @PatchMapping("/{jobId}/complete")
+    @PreAuthorize("hasRole('DRIVER')")
+    public ResponseEntity<ApiResponse<DeliveryJobDetailResponse>> completeJob(
+            @PathVariable UUID jobId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        DeliveryJobDetailResponse data = deliveryService.completeJob(jobId, userDetails.getUserId());
+        return ResponseEntity.ok(ApiResponse.success("Delivery completed successfully", data));
+    }
 }

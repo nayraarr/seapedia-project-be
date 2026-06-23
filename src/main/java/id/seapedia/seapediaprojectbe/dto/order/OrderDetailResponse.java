@@ -41,6 +41,9 @@ public class OrderDetailResponse {
     private Long walletBalanceAfter;
     private List<OrderItemResponse> items;
     private List<OrderStatusHistoryResponse> statusHistory;
+    private UUID driverAssignedId;
+    private LocalDateTime deliveryTakenAt;
+    private LocalDateTime deliveryCompletedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
