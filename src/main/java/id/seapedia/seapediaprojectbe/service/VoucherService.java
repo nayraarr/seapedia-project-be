@@ -9,5 +9,6 @@ import java.util.UUID;
 public interface VoucherService {
     VoucherResponse generateVoucher(VoucherCreateRequest request);
     List<VoucherResponse> listVouchers();
+    List<VoucherResponse> listAllVouchers();
     VoucherResponse getVoucherDetail(UUID id);
 }
