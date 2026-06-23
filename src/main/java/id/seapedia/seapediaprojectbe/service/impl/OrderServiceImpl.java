@@ -15,9 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -428,6 +427,53 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("[processOrder] orderId={} status -> MENUNGGU_PENGIRIM", orderId);
         return toDetail(savedOrder);
+    }
+
+    private List<StatusCountResponse> buildStatusBreakdown(List<Order> orders) {
+        Map<OrderStatus, Long> counts = orders.stream()
+                .collect(Collectors.groupingBy(Order::getStatus, LinkedHashMap::new, Collectors.counting()));
+
+        return Arrays.stream(OrderStatus.values())
+                .filter(counts::containsKey)
+                .map(status -> StatusCountResponse.builder()
+                        .status(status.name())
+                        .statusLabel(status.getLabel())
+                        .count(counts.get(status).intValue())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BuyerSpendingReportResponse getBuyerSpendingReport(UUID buyerId) {
+        log.info("[getBuyerSpendingReport] buyerId={}", buyerId);
+        List<Order> orders = orderRepository.findByBuyerIdOrderByCreatedAtDesc(buyerId);
+
+        List<Order> validOrders = orders.stream()
+                .filter(o -> o.getStatus() != OrderStatus.DIBATALKAN)
+                .toList();
+
+        long totalSpent = validOrders.stream().mapToLong(Order::getTotalAmount).sum();
+        long totalDiscountSaved = validOrders.stream().mapToLong(Order::getDiscountAmount).sum();
+        long totalDeliveryFee = validOrders.stream().mapToLong(Order::getDeliveryFee).sum();
+        long totalTax = validOrders.stream().mapToLong(Order::getTaxAmount).sum();
+        int cancelledOrders = (int) (orders.size() - validOrders.size());
+
+        List<OrderSummaryResponse> recentOrders = orders.stream()
+                .limit(5)
+                .map(this::toSummary)
+                .toList();
+
+        return BuyerSpendingReportResponse.builder()
+                .totalOrders(orders.size())
+                .cancelledOrders(cancelledOrders)
+                .totalSpent(totalSpent)
+                .totalDiscountSaved(totalDiscountSaved)
+                .totalDeliveryFee(totalDeliveryFee)
+                .totalTax(totalTax)
+                .statusBreakdown(buildStatusBreakdown(orders))
+                .recentOrders(recentOrders)
+                .build();
     }
 
     @Transactional(readOnly = true)
