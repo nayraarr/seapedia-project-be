@@ -16,6 +16,7 @@ public interface OrderService {
     OrderDetailResponse getSellerOrderDetail(UUID sellerId, UUID orderId);
     OrderDetailResponse processOrder(UUID sellerId, UUID orderId);
     BuyerSpendingReportResponse getBuyerSpendingReport(UUID buyerId);
+    SellerIncomeReportResponse getSellerIncomeReport(UUID sellerId);
 
     @Transactional(readOnly = true)
     DiscountValidationResponse validateDiscountCode(UUID buyerId, String code);

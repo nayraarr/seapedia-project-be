@@ -476,6 +476,47 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public SellerIncomeReportResponse getSellerIncomeReport(UUID sellerId) {
+        log.info("[getSellerIncomeReport] sellerId={}", sellerId);
+        Store store = storeRepository.findByOwnerId(sellerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
+
+        List<Order> orders = orderRepository.findByStoreIdOrderByCreatedAtDesc(store.getId());
+
+        List<Order> validOrders = orders.stream()
+                .filter(o -> o.getStatus() != OrderStatus.DIBATALKAN)
+                .toList();
+
+        long totalIncome = validOrders.stream().mapToLong(Order::getTotalAmount).sum();
+        long totalDiscountGiven = validOrders.stream().mapToLong(Order::getDiscountAmount).sum();
+
+        int incomingOrders = (int) orders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.SEDANG_DIKEMAS)
+                .count();
+        int cancelledOrders = (int) orders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.DIBATALKAN)
+                .count();
+        int processedOrders = orders.size() - incomingOrders - cancelledOrders;
+
+        List<OrderSummaryResponse> recentOrders = orders.stream()
+                .limit(5)
+                .map(this::toSummary)
+                .toList();
+
+        return SellerIncomeReportResponse.builder()
+                .totalOrders(orders.size())
+                .incomingOrders(incomingOrders)
+                .processedOrders(processedOrders)
+                .cancelledOrders(cancelledOrders)
+                .totalIncome(totalIncome)
+                .totalDiscountGiven(totalDiscountGiven)
+                .statusBreakdown(buildStatusBreakdown(orders))
+                .recentOrders(recentOrders)
+                .build();
+    }
+
     @Transactional(readOnly = true)
     @Override
     public DiscountValidationResponse validateDiscountCode(UUID buyerId, String code) {

@@ -3,6 +3,7 @@ package id.seapedia.seapediaprojectbe.controller;
 import id.seapedia.seapediaprojectbe.dto.common.ApiResponse;
 import id.seapedia.seapediaprojectbe.dto.order.OrderDetailResponse;
 import id.seapedia.seapediaprojectbe.dto.order.OrderSummaryResponse;
+import id.seapedia.seapediaprojectbe.dto.order.SellerIncomeReportResponse;
 import id.seapedia.seapediaprojectbe.security.CustomUserDetails;
 import id.seapedia.seapediaprojectbe.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -45,5 +46,13 @@ public class SellerOrderController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         OrderDetailResponse data = orderService.processOrder(userDetails.getUserId(), orderId);
         return ResponseEntity.ok(ApiResponse.success("Order processed", data));
+    }
+
+    @GetMapping("/report")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<ApiResponse<SellerIncomeReportResponse>> getIncomeReport(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        SellerIncomeReportResponse data = orderService.getSellerIncomeReport(userDetails.getUserId());
+        return ResponseEntity.ok(ApiResponse.success("Income report fetched", data));
     }
 }
