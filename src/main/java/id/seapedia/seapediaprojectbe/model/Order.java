@@ -66,12 +66,39 @@ public class Order {
     @Column(nullable = false)
     private Long subtotal;
 
+    /**
+     * Kode diskon yang dipakai (Voucher/Promo), snapshot apa adanya saat order dibuat.
+     * Null jika tidak pakai diskon.
+     */
+    @Column(name = "discount_code")
+    private String discountCode;
+
+    /**
+     * Membedakan secara eksplisit apakah discountCode berasal dari Voucher atau Promo.
+     * NONE jika tidak ada diskon dipakai.
+     */
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @Column(name = "discount_source", nullable = false)
+    private DiscountSource discountSource = DiscountSource.NONE;
+
+    /**
+     * Nominal potongan dari diskon (dipotong dari subtotal, SEBELUM PPN dihitung).
+     */
+    @Builder.Default
+    @Column(name = "discount_amount", nullable = false)
+    private Long discountAmount = 0L;
+
     @Column(name = "delivery_fee", nullable = false)
     private Long deliveryFee;
 
     @Column(name = "tax_rate_percent", nullable = false)
     private Integer taxRatePercent;
 
+    /**
+     * Dasar pengenaan PPN = subtotal - discountAmount (delivery fee TIDAK dikenai PPN).
+     * Lihat dokumentasi posisi diskon vs PPN di OrderServiceImpl.
+     */
     @Column(name = "tax_base", nullable = false)
     private Long taxBase;
 
