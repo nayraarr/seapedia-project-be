@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -39,5 +36,14 @@ public class SellerOrderController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         OrderDetailResponse data = orderService.getSellerOrderDetail(userDetails.getUserId(), orderId);
         return ResponseEntity.ok(ApiResponse.success("Order detail fetched", data));
+    }
+
+    @PatchMapping("/{orderId}/process")
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<ApiResponse<OrderDetailResponse>> processOrder(
+            @PathVariable UUID orderId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        OrderDetailResponse data = orderService.processOrder(userDetails.getUserId(), orderId);
+        return ResponseEntity.ok(ApiResponse.success("Order processed", data));
     }
 }

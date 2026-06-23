@@ -101,13 +101,6 @@ public class OrderServiceImpl implements OrderService {
             subtotal += product.getPrice() * cartItem.getQuantity();
         }
 
-        // === Resolusi & validasi kode diskon (Voucher atau Promo) ===
-        // Posisi diskon vs PPN (didokumentasikan & konsisten di seluruh aplikasi):
-        //   1) subtotal dihitung dari harga item
-        //   2) discountAmount dihitung dari kode voucher/promo terhadap subtotal (dipotong DI SINI)
-        //   3) taxBase = subtotal - discountAmount  -> PPN 12% dihitung dari subtotal yang SUDAH didiskon
-        //   4) deliveryFee TIDAK didiskon dan TIDAK dikenai PPN, ditambahkan setelah pajak dihitung
-        //   5) totalAmount = taxBase + deliveryFee + taxAmount
         DiscountResolution discount = discountService.resolve(request.getDiscountCode(), subtotal);
 
         long discountAmount = discount.discountAmount();
@@ -295,9 +288,6 @@ public class OrderServiceImpl implements OrderService {
             throw new BadRequestException("Saldo wallet tidak mencukupi");
         }
 
-        // Konsumsi kode diskon (khusus Voucher: kurangi remaining usage dengan lock).
-        // Dilakukan di sini (saat order benar-benar dibuat), bukan saat preview,
-        // supaya remaining usage hanya berkurang untuk checkout yang benar-benar terjadi.
         discountService.consume(computation.discount());
 
         Wallet wallet = walletRepository.findByUserIdForUpdate(buyerId)
@@ -413,6 +403,31 @@ public class OrderServiceImpl implements OrderService {
     public OrderDetailResponse getSellerOrderDetail(UUID sellerId, UUID orderId) {
         log.info("[getSellerOrderDetail] sellerId={} orderId={}", sellerId, orderId);
         return toDetail(getOrderForSeller(sellerId, orderId));
+    }
+
+    @Override
+    @Transactional
+    public OrderDetailResponse processOrder(UUID sellerId, UUID orderId) {
+        log.info("[processOrder] sellerId={} orderId={}", sellerId, orderId);
+
+        Order order = getOrderForSeller(sellerId, orderId);
+
+        if (order.getStatus() != OrderStatus.SEDANG_DIKEMAS) {
+            throw new BadRequestException(
+                    "Order tidak bisa diproses dari status " + order.getStatus().getLabel());
+        }
+
+        order.setStatus(OrderStatus.MENUNGGU_PENGIRIM);
+        Order savedOrder = orderRepository.save(order);
+
+        orderStatusHistoryRepository.save(OrderStatusHistory.builder()
+                .order(savedOrder)
+                .status(OrderStatus.MENUNGGU_PENGIRIM)
+                .note("Pesanan diproses oleh seller, menunggu pengirim mengambil pesanan")
+                .build());
+
+        log.info("[processOrder] orderId={} status -> MENUNGGU_PENGIRIM", orderId);
+        return toDetail(savedOrder);
     }
 
     @Transactional(readOnly = true)
