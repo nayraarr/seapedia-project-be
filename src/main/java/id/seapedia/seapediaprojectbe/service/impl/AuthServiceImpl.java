@@ -10,6 +10,7 @@ import id.seapedia.seapediaprojectbe.repository.UserRepository;
 import id.seapedia.seapediaprojectbe.repository.UserRoleRepository;
 import id.seapedia.seapediaprojectbe.security.JwtTokenProvider;
 import id.seapedia.seapediaprojectbe.service.AuthService;
+import id.seapedia.seapediaprojectbe.service.WalletService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -35,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final WalletService walletService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -263,12 +265,19 @@ public class AuthServiceImpl implements AuthService {
     public FinancialSummaryResponse getFinancialSummary(UUID userId) {
         log.info("[getFinancialSummary] 🚀 entry: userId={}", userId);
 
+        Long walletBalance = 0L;
+        try {
+            walletBalance = walletService.getWallet(userId).getBalance();
+        } catch (Exception e) {
+            log.warn("[getFinancialSummary] ⚠️ could not fetch wallet balance: {}", e.getMessage());
+        }
+
         FinancialSummaryResponse response = FinancialSummaryResponse.builder()
-                .walletBalance(0L)
+                .walletBalance(walletBalance)
                 .sellerIncome(0L)
                 .driverEarnings(0L)
                 .build();
-        log.info("[getFinancialSummary] ✅ exit: userId={}", userId);
+        log.info("[getFinancialSummary] ✅ exit: userId={} walletBalance={}", userId, walletBalance);
         return response;
     }
 }
