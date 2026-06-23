@@ -26,7 +26,7 @@ public class AdminDashboardResponse {
     private long ordersMenungguPengirim;
     private long ordersDikirim;
     private long ordersSelesai;
-    private long ordersDibatalkan;
+    private long ordersDikembalikan;
     private Long totalRevenue;
 
     private long totalVouchers;

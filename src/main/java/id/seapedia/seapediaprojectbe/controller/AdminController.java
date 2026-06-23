@@ -1,12 +1,10 @@
 package id.seapedia.seapediaprojectbe.controller;
 
-import id.seapedia.seapediaprojectbe.dto.admin.AdminDashboardResponse;
-import id.seapedia.seapediaprojectbe.dto.admin.AdminDeliveryJobResponse;
-import id.seapedia.seapediaprojectbe.dto.admin.AdminOrderResponse;
-import id.seapedia.seapediaprojectbe.dto.admin.AdminUserResponse;
+import id.seapedia.seapediaprojectbe.dto.admin.*;
 import id.seapedia.seapediaprojectbe.dto.common.ApiResponse;
 import id.seapedia.seapediaprojectbe.security.CustomUserDetails;
 import id.seapedia.seapediaprojectbe.service.AdminService;
+import id.seapedia.seapediaprojectbe.service.OverdueService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -22,6 +21,7 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final OverdueService overdueService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse<AdminDashboardResponse>> getDashboard(
@@ -47,5 +47,20 @@ public class AdminController {
     public ResponseEntity<ApiResponse<List<AdminDeliveryJobResponse>>> getDeliveryJobs() {
         List<AdminDeliveryJobResponse> data = adminService.listDeliveryJobs();
         return ResponseEntity.ok(ApiResponse.success("Delivery jobs list", data));
+    }
+
+    @PostMapping("/overdue/process")
+    public ResponseEntity<ApiResponse<List<OverdueProcessResult>>> processOverdue() {
+        log.info("[POST /api/admin/overdue/process]");
+        List<OverdueProcessResult> results = overdueService.processAllOverdueOrders();
+        return ResponseEntity.ok(ApiResponse.success("Overdue orders processed", results));
+    }
+
+    @PostMapping("/overdue/process/{orderId}")
+    public ResponseEntity<ApiResponse<OverdueProcessResult>> processOneOverdue(
+            @PathVariable UUID orderId) {
+        log.info("[POST /api/admin/overdue/process/{}]", orderId);
+        OverdueProcessResult result = overdueService.processOverdueOrder(orderId);
+        return ResponseEntity.ok(ApiResponse.success("Overdue order processed", result));
     }
 }
