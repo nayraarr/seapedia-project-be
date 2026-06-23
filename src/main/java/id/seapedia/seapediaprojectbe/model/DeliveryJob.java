@@ -26,6 +26,15 @@ public class DeliveryJob {
     @JoinColumn(name = "order_id", nullable = false, unique = true)
     private Order order;
 
+    @Column(name = "driver_id")
+    private UUID driverId;
+
+    @Column(name = "taken_at")
+    private LocalDateTime takenAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }

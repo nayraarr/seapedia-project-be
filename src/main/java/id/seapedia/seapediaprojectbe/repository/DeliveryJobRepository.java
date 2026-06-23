@@ -16,4 +16,10 @@ public interface DeliveryJobRepository extends JpaRepository<DeliveryJob, UUID> 
     List<DeliveryJob> findByOrder_StatusOrderByCreatedAtAsc(OrderStatus status);
 
     Optional<DeliveryJob> findByIdAndOrder_Status(UUID id, OrderStatus status);
+
+    List<DeliveryJob> findByDriverIdAndOrder_StatusInOrderByTakenAtDesc(UUID driverId, List<OrderStatus> statuses);
+
+    List<DeliveryJob> findByDriverIdAndOrder_StatusOrderByCompletedAtDesc(UUID driverId, OrderStatus status);
+
+    long countByDriverIdAndOrder_Status(UUID driverId, OrderStatus status);
 }

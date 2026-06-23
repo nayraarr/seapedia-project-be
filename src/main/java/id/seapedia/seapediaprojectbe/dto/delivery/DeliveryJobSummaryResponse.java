@@ -1,6 +1,7 @@
 package id.seapedia.seapediaprojectbe.dto.delivery;
 
 import id.seapedia.seapediaprojectbe.model.DeliveryMethod;
+import id.seapedia.seapediaprojectbe.model.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,5 +26,7 @@ public class DeliveryJobSummaryResponse {
     private String deliveryMethodLabel;
     private Integer itemCount;
     private Long totalAmount;
+    private OrderStatus status;
+    private String statusLabel;
     private LocalDateTime availableSince;
 }
