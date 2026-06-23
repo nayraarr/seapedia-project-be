@@ -89,6 +89,7 @@ public class VoucherServiceImpl implements VoucherService {
     public List<VoucherResponse> listVouchers() {
         return voucherRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
+                .filter(v -> v.hasRemainingUsage())
                 .map(this::toResponse)
                 .toList();
     }
