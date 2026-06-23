@@ -72,12 +72,12 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
 
         Order order = job.getOrder();
-        order.setStatus(OrderStatus.DIKIRIM);
+        order.setStatus(OrderStatus.SEDANG_DIKIRIM);
         orderRepository.save(order);
 
         orderStatusHistoryRepository.save(OrderStatusHistory.builder()
                 .order(order)
-                .status(OrderStatus.DIKIRIM)
+                .status(OrderStatus.SEDANG_DIKIRIM)
                 .note("Pesanan diambil oleh driver")
                 .build());
 
@@ -95,7 +95,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         List<DeliveryJob> jobs = deliveryJobRepository
                 .findByDriverIdAndOrder_StatusInOrderByTakenAtDesc(driverId,
-                        List.of(OrderStatus.DIKIRIM));
+                        List.of(OrderStatus.SEDANG_DIKIRIM));
 
         return jobs.stream().map(this::toSummary).toList();
     }
@@ -132,7 +132,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         List<DeliveryJob> activeJobsList = deliveryJobRepository
                 .findByDriverIdAndOrder_StatusInOrderByTakenAtDesc(driverId,
-                        List.of(OrderStatus.DIKIRIM));
+                        List.of(OrderStatus.SEDANG_DIKIRIM));
 
         return DriverIncomeReportResponse.builder()
                 .totalJobsTaken(totalJobsTaken)
@@ -225,7 +225,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         log.info("[completeJob] jobId={} driverId={}", jobId, driverId);
 
         DeliveryJob job = deliveryJobRepository
-                .findByIdAndDriverIdAndOrder_Status(jobId, driverId, OrderStatus.DIKIRIM)
+                .findByIdAndDriverIdAndOrder_Status(jobId, driverId, OrderStatus.SEDANG_DIKIRIM)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Active delivery job not found or not owned by this driver"));
 
