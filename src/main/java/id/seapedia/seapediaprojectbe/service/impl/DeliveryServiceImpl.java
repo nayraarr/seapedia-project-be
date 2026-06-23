@@ -157,6 +157,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                 .deliveryMethod(order.getDeliveryMethod())
                 .deliveryMethodLabel(order.getDeliveryMethod().getLabel())
                 .itemCount(order.getItems().size())
+                .deliveryFee(order.getDeliveryFee())
                 .totalAmount(order.getTotalAmount())
                 .status(order.getStatus())
                 .statusLabel(order.getStatus().getLabel())

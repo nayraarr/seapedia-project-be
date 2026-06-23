@@ -25,6 +25,7 @@ public class DeliveryJobSummaryResponse {
     private DeliveryMethod deliveryMethod;
     private String deliveryMethodLabel;
     private Integer itemCount;
+    private Long deliveryFee;
     private Long totalAmount;
     private OrderStatus status;
     private String statusLabel;
