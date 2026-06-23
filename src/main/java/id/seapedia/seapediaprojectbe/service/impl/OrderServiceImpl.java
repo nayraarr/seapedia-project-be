@@ -1,5 +1,6 @@
 package id.seapedia.seapediaprojectbe.service.impl;
 
+import id.seapedia.seapediaprojectbe.dto.discount.DiscountValidationResponse;
 import id.seapedia.seapediaprojectbe.dto.order.*;
 import id.seapedia.seapediaprojectbe.exception.BadRequestException;
 import id.seapedia.seapediaprojectbe.exception.ResourceNotFoundException;
@@ -7,6 +8,8 @@ import id.seapedia.seapediaprojectbe.model.*;
 import id.seapedia.seapediaprojectbe.repository.*;
 import id.seapedia.seapediaprojectbe.service.OrderService;
 import id.seapedia.seapediaprojectbe.service.WalletService;
+import id.seapedia.seapediaprojectbe.service.DiscountResolution;
+import id.seapedia.seapediaprojectbe.service.DiscountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemRepository orderItemRepository;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final UserRepository userRepository;
+    private final DiscountService discountService;
 
     private record OrderComputation(
             Cart cart,
@@ -40,6 +44,7 @@ public class OrderServiceImpl implements OrderService {
             Address address,
             List<CartItem> items,
             long subtotal,
+            DiscountResolution discount,
             long deliveryFee,
             long taxBase,
             long taxAmount,
@@ -96,10 +101,20 @@ public class OrderServiceImpl implements OrderService {
             subtotal += product.getPrice() * cartItem.getQuantity();
         }
 
+        // === Resolusi & validasi kode diskon (Voucher atau Promo) ===
+        // Posisi diskon vs PPN (didokumentasikan & konsisten di seluruh aplikasi):
+        //   1) subtotal dihitung dari harga item
+        //   2) discountAmount dihitung dari kode voucher/promo terhadap subtotal (dipotong DI SINI)
+        //   3) taxBase = subtotal - discountAmount  -> PPN 12% dihitung dari subtotal yang SUDAH didiskon
+        //   4) deliveryFee TIDAK didiskon dan TIDAK dikenai PPN, ditambahkan setelah pajak dihitung
+        //   5) totalAmount = taxBase + deliveryFee + taxAmount
+        DiscountResolution discount = discountService.resolve(request.getDiscountCode(), subtotal);
+
+        long discountAmount = discount.discountAmount();
         long deliveryFee = request.getDeliveryMethod().getFee();
-        long taxBase = subtotal;
+        long taxBase = subtotal - discountAmount;
         long taxAmount = Math.round(taxBase * TAX_RATE_PERCENT / 100.0);
-        long totalAmount = subtotal + deliveryFee + taxAmount;
+        long totalAmount = taxBase + deliveryFee + taxAmount;
 
         long walletBalance = walletRepository.findByUserId(buyerId)
                 .map(Wallet::getBalance)
@@ -111,6 +126,7 @@ public class OrderServiceImpl implements OrderService {
                 address,
                 items,
                 subtotal,
+                discount,
                 deliveryFee,
                 taxBase,
                 taxAmount,
@@ -149,6 +165,10 @@ public class OrderServiceImpl implements OrderService {
                 .deliveryMethod(method)
                 .deliveryMethodLabel(method.getLabel())
                 .subtotal(computation.subtotal())
+                .discountCode(computation.discount().code())
+                .discountSource(computation.discount().source())
+                .discountLabel(computation.discount().label())
+                .discountAmount(computation.discount().discountAmount())
                 .deliveryFee(computation.deliveryFee())
                 .taxRatePercent(TAX_RATE_PERCENT)
                 .taxBase(computation.taxBase())
@@ -172,6 +192,9 @@ public class OrderServiceImpl implements OrderService {
                 .status(order.getStatus())
                 .statusLabel(order.getStatus().getLabel())
                 .subtotal(order.getSubtotal())
+                .discountCode(order.getDiscountCode())
+                .discountSource(order.getDiscountSource())
+                .discountAmount(order.getDiscountAmount())
                 .deliveryFee(order.getDeliveryFee())
                 .taxRatePercent(order.getTaxRatePercent())
                 .taxAmount(order.getTaxAmount())
@@ -224,6 +247,9 @@ public class OrderServiceImpl implements OrderService {
                 .status(order.getStatus())
                 .statusLabel(order.getStatus().getLabel())
                 .subtotal(order.getSubtotal())
+                .discountCode(order.getDiscountCode())
+                .discountSource(order.getDiscountSource())
+                .discountAmount(order.getDiscountAmount())
                 .deliveryFee(order.getDeliveryFee())
                 .taxRatePercent(order.getTaxRatePercent())
                 .taxBase(order.getTaxBase())
@@ -269,6 +295,11 @@ public class OrderServiceImpl implements OrderService {
             throw new BadRequestException("Saldo wallet tidak mencukupi");
         }
 
+        // Konsumsi kode diskon (khusus Voucher: kurangi remaining usage dengan lock).
+        // Dilakukan di sini (saat order benar-benar dibuat), bukan saat preview,
+        // supaya remaining usage hanya berkurang untuk checkout yang benar-benar terjadi.
+        discountService.consume(computation.discount());
+
         Wallet wallet = walletRepository.findByUserIdForUpdate(buyerId)
                 .orElseGet(() -> walletRepository.save(Wallet.builder().userId(buyerId).balance(0L).build()));
         long balanceBefore = wallet.getBalance();
@@ -307,6 +338,9 @@ public class OrderServiceImpl implements OrderService {
                 .deliveryMethod(request.getDeliveryMethod())
                 .status(OrderStatus.SEDANG_DIKEMAS)
                 .subtotal(computation.subtotal())
+                .discountCode(computation.discount().code())
+                .discountSource(computation.discount().source())
+                .discountAmount(computation.discount().discountAmount())
                 .deliveryFee(computation.deliveryFee())
                 .taxRatePercent(TAX_RATE_PERCENT)
                 .taxBase(computation.taxBase())
@@ -379,5 +413,23 @@ public class OrderServiceImpl implements OrderService {
     public OrderDetailResponse getSellerOrderDetail(UUID sellerId, UUID orderId) {
         log.info("[getSellerOrderDetail] sellerId={} orderId={}", sellerId, orderId);
         return toDetail(getOrderForSeller(sellerId, orderId));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public DiscountValidationResponse validateDiscountCode(UUID buyerId, String code) {
+        log.info("[validateDiscountCode] buyerId={} code={}", buyerId, code);
+        Cart cart = cartRepository.findByBuyerId(buyerId)
+                .orElseThrow(() -> new BadRequestException("Cart is empty"));
+
+        if (cart.getItems().isEmpty()) {
+            throw new BadRequestException("Cart is empty");
+        }
+
+        long subtotal = cart.getItems().stream()
+                .mapToLong(item -> item.getProduct().getPrice() * item.getQuantity())
+                .sum();
+
+        return discountService.validate(code, subtotal);
     }
 }
