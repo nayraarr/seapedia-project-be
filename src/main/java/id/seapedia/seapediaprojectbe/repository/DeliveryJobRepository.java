@@ -32,4 +32,10 @@ public interface DeliveryJobRepository extends JpaRepository<DeliveryJob, UUID> 
     Optional<DeliveryJob> findByIdAndOrder_StatusForUpdate(@Param("id") UUID id, @Param("status") OrderStatus status);
 
     Optional<DeliveryJob> findByIdAndDriverIdAndOrder_Status(UUID id, UUID driverId, OrderStatus status);
+
+    long countByDriverIdIsNull();
+
+    long countByDriverIdIsNotNullAndCompletedAtIsNull();
+
+    long countByCompletedAtIsNotNull();
 }
