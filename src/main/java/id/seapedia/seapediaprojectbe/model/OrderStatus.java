@@ -8,9 +8,8 @@ import lombok.Getter;
 public enum OrderStatus {
     SEDANG_DIKEMAS("Sedang Dikemas"),
     MENUNGGU_PENGIRIM("Menunggu Pengirim"),
-    DIPROSES("Diproses"),
-    DIKIRIM("Dikirim"),
-    SELESAI("Selesai"),
+    DIKIRIM("Sedang Dikirim"),
+    SELESAI("Pesanan Selesai"),
     DIBATALKAN("Dibatalkan");
 
     private final String label;

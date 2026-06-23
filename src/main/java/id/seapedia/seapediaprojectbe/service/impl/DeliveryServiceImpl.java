@@ -72,12 +72,12 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
 
         Order order = job.getOrder();
-        order.setStatus(OrderStatus.DIPROSES);
+        order.setStatus(OrderStatus.DIKIRIM);
         orderRepository.save(order);
 
         orderStatusHistoryRepository.save(OrderStatusHistory.builder()
                 .order(order)
-                .status(OrderStatus.DIPROSES)
+                .status(OrderStatus.DIKIRIM)
                 .note("Pesanan diambil oleh driver")
                 .build());
 
@@ -95,7 +95,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         List<DeliveryJob> jobs = deliveryJobRepository
                 .findByDriverIdAndOrder_StatusInOrderByTakenAtDesc(driverId,
-                        List.of(OrderStatus.DIPROSES, OrderStatus.DIKIRIM));
+                        List.of(OrderStatus.DIKIRIM));
 
         return jobs.stream().map(this::toSummary).toList();
     }
@@ -132,7 +132,7 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         List<DeliveryJob> activeJobsList = deliveryJobRepository
                 .findByDriverIdAndOrder_StatusInOrderByTakenAtDesc(driverId,
-                        List.of(OrderStatus.DIPROSES, OrderStatus.DIKIRIM));
+                        List.of(OrderStatus.DIKIRIM));
 
         return DriverIncomeReportResponse.builder()
                 .totalJobsTaken(totalJobsTaken)
