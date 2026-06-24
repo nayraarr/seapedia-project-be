@@ -9,6 +9,7 @@ import id.seapedia.seapediaprojectbe.service.SimulationService;
 import id.seapedia.seapediaprojectbe.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,6 +67,14 @@ public class OverdueServiceImpl implements OverdueService {
         }
 
         return results;
+    }
+
+    @Scheduled(fixedRate = 1800000)
+    @Transactional
+    public void scheduledProcessOverdueOrders() {
+        log.info("[scheduledProcessOverdueOrders] Menjalankan pemrosesan overdue otomatis setiap 30 menit...");
+        List<OverdueProcessResult> results = processAllOverdueOrders();
+        log.info("[scheduledProcessOverdueOrders] Selesai: {} order diproses", results.size());
     }
 
     @Override
