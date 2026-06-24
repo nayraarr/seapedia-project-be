@@ -10,7 +10,7 @@ public enum OrderStatus {
     MENUNGGU_PENGIRIM("Menunggu Pengirim"),
     SEDANG_DIKIRIM("Sedang Dikirim"),
     SELESAI("Pesanan Selesai"),
-    DIBATALKAN("Dibatalkan");
+    DIKEMBALIKAN("Dikembalikan");
 
     private final String label;
 }

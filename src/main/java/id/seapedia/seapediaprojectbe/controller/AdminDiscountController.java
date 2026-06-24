@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/admin")
@@ -22,6 +24,20 @@ public class AdminDiscountController {
 
     private final VoucherService voucherService;
     private final PromoService promoService;
+
+    @GetMapping("/vouchers")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<VoucherResponse>>> listAllVouchers() {
+        List<VoucherResponse> data = voucherService.listAllVouchers();
+        return ResponseEntity.ok(ApiResponse.success("All vouchers fetched", data));
+    }
+
+    @GetMapping("/promos")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<List<PromoResponse>>> listAllPromos() {
+        List<PromoResponse> data = promoService.listPromos();
+        return ResponseEntity.ok(ApiResponse.success("All promos fetched", data));
+    }
 
     @PostMapping("/vouchers")
     @PreAuthorize("hasRole('ADMIN')")

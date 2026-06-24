@@ -13,4 +13,8 @@ public interface WalletService {
     List<WalletTransactionResponse> getTransactionHistory(UUID userId);
 
     void deductBalance(UUID userId, Long amount, String description);
+
+    void refundBalance(UUID userId, Long amount, String description);
+
+    void creditBalance(UUID userId, Long amount, String description);
 }

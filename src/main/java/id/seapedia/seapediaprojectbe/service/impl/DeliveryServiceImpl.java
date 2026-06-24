@@ -12,11 +12,14 @@ import id.seapedia.seapediaprojectbe.model.DeliveryJob;
 import id.seapedia.seapediaprojectbe.model.Order;
 import id.seapedia.seapediaprojectbe.model.OrderStatus;
 import id.seapedia.seapediaprojectbe.model.OrderStatusHistory;
+import id.seapedia.seapediaprojectbe.model.Store;
 import id.seapedia.seapediaprojectbe.repository.DeliveryJobRepository;
 import id.seapedia.seapediaprojectbe.repository.OrderItemRepository;
 import id.seapedia.seapediaprojectbe.repository.OrderRepository;
 import id.seapedia.seapediaprojectbe.repository.OrderStatusHistoryRepository;
+import id.seapedia.seapediaprojectbe.repository.StoreRepository;
 import id.seapedia.seapediaprojectbe.service.DeliveryService;
+import id.seapedia.seapediaprojectbe.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,6 +38,8 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
+    private final StoreRepository storeRepository;
+    private final WalletService walletService;
 
     @Override
     @Transactional(readOnly = true)
@@ -242,6 +247,17 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         job.setCompletedAt(LocalDateTime.now());
         DeliveryJob saved = deliveryJobRepository.save(job);
+
+        // Credit seller wallet
+        storeRepository.findById(order.getStoreId()).ifPresent(store -> {
+            walletService.creditBalance(store.getOwnerId(), order.getTotalAmount(),
+                    "Pendapatan dari pesanan #" + order.getId().toString().substring(0, 8));
+        });
+
+        // Credit driver wallet
+        long deliveryFee = order.getDeliveryMethod().getFee();
+        walletService.creditBalance(job.getDriverId(), deliveryFee,
+                "Pendapatan pengiriman #" + order.getId().toString().substring(0, 8));
 
         return toDetail(saved);
     }
