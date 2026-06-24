@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,8 +22,9 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .toList();
+        String message = String.join("; ", errors);
         return ResponseEntity.badRequest()
-                .body(ApiResponse.error("Validation failed", errors));
+                .body(ApiResponse.error(message, errors));
     }
 
     @ExceptionHandler(BadRequestException.class)
@@ -47,6 +49,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponse.error("Invalid username or password", null));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnreadableBody(
+            HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Request body tidak valid atau format salah", null));
     }
 
     @ExceptionHandler(Exception.class)
