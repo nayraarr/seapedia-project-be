@@ -88,8 +88,7 @@ public class AdminServiceImpl implements AdminService {
             LocalDateTime threshold = simulatedNow.minusMinutes(method.getSlaSinceCreatedMinutes());
             overdueList.addAll(orderRepository.findOverdueByDeliveryMethod(finalStatuses, threshold, method));
         }
-        List<Order> recentProcessed = orderRepository.findByStatusAndUpdatedAtSince(
-                OrderStatus.DIKEMBALIKAN, simulatedNow.minusHours(24));
+        List<Order> recentProcessed = orderRepository.findByStatus(OrderStatus.DIKEMBALIKAN);
 
         long overdueCount = overdueList.size() + recentProcessed.size();
 

@@ -6,11 +6,11 @@ import id.seapedia.seapediaprojectbe.service.OverdueService;
 import id.seapedia.seapediaprojectbe.service.SimulationService;
 import lombok.RequiredArgsConstructor;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/simulate")
@@ -45,9 +45,9 @@ public class SimulationController {
     }
 
     private Map<String, Object> statusMap() {
-        return Map.of(
-                "offsetMinutes", simulationService.getOffsetMinutes(),
-                "simulatedNow", simulationService.now().toString()
-        );
+        Map<String, Object> map = new HashMap<>();
+        map.put("offsetMinutes", simulationService.getOffsetMinutes());
+        map.put("simulatedNow", simulationService.now().toString());
+        return map;
     }
 }

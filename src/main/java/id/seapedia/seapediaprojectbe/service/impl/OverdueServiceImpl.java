@@ -101,7 +101,6 @@ public class OverdueServiceImpl implements OverdueService {
         }
 
         String previousStatus = order.getStatus().name();
-        boolean shouldRefund = true;
 
         List<OrderItem> items = orderItemRepository.findByOrderIdOrderByCreatedAtAsc(order.getId());
         for (OrderItem item : items) {
@@ -113,16 +112,14 @@ public class OverdueServiceImpl implements OverdueService {
         }
 
         Long refundedAmount = null;
-        if (shouldRefund) {
-            walletService.refundBalance(
-                    order.getBuyerId(),
-                    order.getTotalAmount(),
-                    "Refund otomatis order #" + order.getId().toString().substring(0, 8) +
-                            " (overdue - " + order.getDeliveryMethod().getLabel() + ")"
-            );
-            refundedAmount = order.getTotalAmount();
-            log.info("[doProcess] Refunded orderId={} amount={}", order.getId(), refundedAmount);
-        }
+        walletService.refundBalance(
+                order.getBuyerId(),
+                order.getTotalAmount(),
+                "Refund otomatis order #" + order.getId().toString().substring(0, 8) +
+                        " (overdue - " + order.getDeliveryMethod().getLabel() + ")"
+        );
+        refundedAmount = order.getTotalAmount();
+        log.info("[doProcess] Refunded orderId={} amount={}", order.getId(), refundedAmount);
 
         order.setStatus(OrderStatus.DIKEMBALIKAN);
         orderRepository.save(order);
