@@ -12,7 +12,7 @@ public class AddToCartRequest {
     @NotNull(message = "productId wajib diisi")
     private UUID productId;
 
-    @NotNull(message = "quantity wajib diisi")
-    @Min(value = 1, message = "quantity minimal 1")
+    @NotNull(message = "Quantity wajib diisi")
+    @Min(value = 1, message = "Quantity minimal 1")
     private Integer quantity;
 }

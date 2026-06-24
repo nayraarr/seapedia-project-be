@@ -7,8 +7,8 @@ import lombok.Data;
 @Data
 public class UpdateCartItemRequest {
 
-    @NotNull(message = "quantity wajib diisi")
-    @Min(value = 1, message = "quantity minimal 1")
+    @NotNull(message = "Quantity wajib diisi")
+    @Min(value = 1, message = "Quantity minimal 1")
     private Integer quantity;
 
 }
