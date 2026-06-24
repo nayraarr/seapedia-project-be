@@ -1,8 +1,12 @@
 package id.seapedia.seapediaprojectbe.controller;
 
+import id.seapedia.seapediaprojectbe.dto.admin.OverdueProcessResult;
 import id.seapedia.seapediaprojectbe.dto.common.ApiResponse;
+import id.seapedia.seapediaprojectbe.service.OverdueService;
 import id.seapedia.seapediaprojectbe.service.SimulationService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,11 +18,19 @@ import java.util.Map;
 public class SimulationController {
 
     private final SimulationService simulationService;
+    private final OverdueService overdueService;
 
     @PostMapping("/advance")
     public ResponseEntity<ApiResponse<Map<String, Object>>> advance(@RequestParam long minutes) {
         simulationService.advance(minutes);
-        return ResponseEntity.ok(ApiResponse.success("Time advanced", statusMap()));
+        List<OverdueProcessResult> overdueResults = overdueService.processAllOverdueOrders();
+        int processed = (int) overdueResults.stream().filter(r -> !r.isSkipped()).count();
+
+        Map<String, Object> body = statusMap();
+        body.put("overdueProcessed", processed);
+        body.put("overdueResults", overdueResults);
+
+        return ResponseEntity.ok(ApiResponse.success("Time advanced", body));
     }
 
     @PostMapping("/reset")
