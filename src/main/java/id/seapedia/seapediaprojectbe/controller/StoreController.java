@@ -30,7 +30,7 @@ public class StoreController {
     public ResponseEntity<ApiResponse<StoreResponse>> createStore(
             @Valid @RequestBody StoreRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[POST /seller/store] 🚀 userId={}", userDetails.getUserId());
+        log.info("[POST /seller/store]  userId={}", userDetails.getUserId());
         StoreResponse data = storeService.createStore(request, userDetails.getUserId());
         return ResponseEntity.ok(ApiResponse.success("Store created", data));
     }
@@ -40,7 +40,7 @@ public class StoreController {
     public ResponseEntity<ApiResponse<StoreResponse>> updateStore(
             @Valid @RequestBody StoreRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[PUT /seller/store] 🚀 userId={}", userDetails.getUserId());
+        log.info("[PUT /seller/store]  userId={}", userDetails.getUserId());
         StoreResponse data = storeService.updateStore(request, userDetails.getUserId());
         return ResponseEntity.ok(ApiResponse.success("Store updated", data));
     }
@@ -49,7 +49,7 @@ public class StoreController {
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<ApiResponse<StoreResponse>> getMyStore(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[GET /seller/store] 🚀 userId={}", userDetails.getUserId());
+        log.info("[GET /seller/store]  userId={}", userDetails.getUserId());
         StoreResponse data = storeService.getMyStore(userDetails.getUserId());
         return ResponseEntity.ok(ApiResponse.success("Store fetched", data));
     }
@@ -57,15 +57,15 @@ public class StoreController {
     // PUBLIC endpoints
     @GetMapping("/stores")
     public ResponseEntity<ApiResponse<List<StoreResponse>>> getAllStores() {
-        log.info("[GET /api/stores] 🚀 request received");
+        log.info("[GET /api/stores]  request received");
         List<StoreResponse> data = storeService.getAllStores();
-        log.info("[GET /api/stores] ✅ returning {} stores", data.size());
+        log.info("[GET /api/stores]  returning {} stores", data.size());
         return ResponseEntity.ok(ApiResponse.success("Stores fetched", data));
     }
 
     @GetMapping("/stores/{id}")
     public ResponseEntity<ApiResponse<StoreResponse>> getStoreById(@PathVariable UUID id) {
-        log.info("[GET /stores/{}] 🚀", id);
+        log.info("[GET /stores/{}] ", id);
         StoreResponse data = storeService.getStoreById(id);
         return ResponseEntity.ok(ApiResponse.success("Store fetched", data));
     }

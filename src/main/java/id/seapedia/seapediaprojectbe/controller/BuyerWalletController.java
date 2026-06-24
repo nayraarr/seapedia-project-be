@@ -28,7 +28,7 @@ public class BuyerWalletController {
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<ApiResponse<WalletResponse>> getWallet(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[GET /buyer/wallet] 🚀 userId={}", userDetails.getUserId());
+        log.info("[GET /buyer/wallet]  userId={}", userDetails.getUserId());
         WalletResponse data = walletService.getWallet(userDetails.getUserId());
         return ResponseEntity.ok(ApiResponse.success("Wallet fetched", data));
     }
@@ -38,7 +38,7 @@ public class BuyerWalletController {
     public ResponseEntity<ApiResponse<WalletResponse>> topUp(
             @Valid @RequestBody TopUpRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[POST /buyer/wallet/topup] 🚀 userId={} amount={}", userDetails.getUserId(), request.getAmount());
+        log.info("[POST /buyer/wallet/topup]  userId={} amount={}", userDetails.getUserId(), request.getAmount());
         WalletResponse data = walletService.topUp(userDetails.getUserId(), request);
         return ResponseEntity.ok(ApiResponse.success("Top up successful", data));
     }
@@ -47,7 +47,7 @@ public class BuyerWalletController {
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<ApiResponse<List<WalletTransactionResponse>>> getTransactions(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[GET /buyer/wallet/transactions] 🚀 userId={}", userDetails.getUserId());
+        log.info("[GET /buyer/wallet/transactions]  userId={}", userDetails.getUserId());
         List<WalletTransactionResponse> data = walletService.getTransactionHistory(userDetails.getUserId());
         return ResponseEntity.ok(ApiResponse.success("Transactions fetched", data));
     }

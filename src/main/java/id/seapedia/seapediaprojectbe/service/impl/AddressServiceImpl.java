@@ -39,7 +39,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     @Transactional(readOnly = true)
     public List<AddressResponse> getMyAddresses(UUID userId) {
-        log.info("[getMyAddresses] 🚀 userId={}", userId);
+        log.info("[getMyAddresses]  userId={}", userId);
         return addressRepository.findByUserId(userId)
                 .stream().map(this::toResponse).toList();
     }
@@ -47,7 +47,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     @Transactional
     public AddressResponse createAddress(UUID userId, AddressRequest request) {
-        log.info("[createAddress] 🚀 userId={} label={}", userId, request.getLabel());
+        log.info("[createAddress]  userId={} label={}", userId, request.getLabel());
 
         if (Boolean.TRUE.equals(request.getIsDefault())) {
             unsetAllDefaults(userId);
@@ -65,18 +65,18 @@ public class AddressServiceImpl implements AddressService {
                 .build();
 
         address = addressRepository.save(address);
-        log.info("[createAddress] ✅ addressId={}", address.getId());
+        log.info("[createAddress]  addressId={}", address.getId());
         return toResponse(address);
     }
 
     @Override
     @Transactional
     public AddressResponse updateAddress(UUID userId, UUID addressId, AddressRequest request) {
-        log.info("[updateAddress] 🚀 userId={} addressId={}", userId, addressId);
+        log.info("[updateAddress]  userId={} addressId={}", userId, addressId);
 
         Address address = addressRepository.findByIdAndUserId(addressId, userId)
                 .orElseThrow(() -> {
-                    log.warn("[updateAddress] ⚠️ not found: addressId={}", addressId);
+                    log.warn("[updateAddress]  not found: addressId={}", addressId);
                     return new ResourceNotFoundException("Address not found");
                 });
 
@@ -93,37 +93,37 @@ public class AddressServiceImpl implements AddressService {
         address.setIsDefault(request.getIsDefault());
 
         address = addressRepository.save(address);
-        log.info("[updateAddress] ✅ addressId={}", address.getId());
+        log.info("[updateAddress]  addressId={}", address.getId());
         return toResponse(address);
     }
 
     @Override
     @Transactional
     public void deleteAddress(UUID userId, UUID addressId) {
-        log.info("[deleteAddress] 🚀 userId={} addressId={}", userId, addressId);
+        log.info("[deleteAddress]  userId={} addressId={}", userId, addressId);
         Address address = addressRepository.findByIdAndUserId(addressId, userId)
                 .orElseThrow(() -> {
-                    log.warn("[deleteAddress] ⚠️ not found: addressId={}", addressId);
+                    log.warn("[deleteAddress]  not found: addressId={}", addressId);
                     return new ResourceNotFoundException("Address not found");
                 });
         addressRepository.delete(address);
-        log.info("[deleteAddress] ✅ deleted addressId={}", addressId);
+        log.info("[deleteAddress]  deleted addressId={}", addressId);
     }
 
     @Override
     @Transactional
     public AddressResponse setDefaultAddress(UUID userId, UUID addressId) {
-        log.info("[setDefaultAddress] 🚀 userId={} addressId={}", userId, addressId);
+        log.info("[setDefaultAddress]  userId={} addressId={}", userId, addressId);
         Address address = addressRepository.findByIdAndUserId(addressId, userId)
                 .orElseThrow(() -> {
-                    log.warn("[setDefaultAddress] ⚠️ not found: addressId={}", addressId);
+                    log.warn("[setDefaultAddress]  not found: addressId={}", addressId);
                     return new ResourceNotFoundException("Address not found");
                 });
 
         unsetAllDefaults(userId);
         address.setIsDefault(true);
         address = addressRepository.save(address);
-        log.info("[setDefaultAddress] ✅ default set to addressId={}", addressId);
+        log.info("[setDefaultAddress]  default set to addressId={}", addressId);
         return toResponse(address);
     }
 

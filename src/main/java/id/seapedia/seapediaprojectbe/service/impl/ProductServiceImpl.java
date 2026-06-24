@@ -29,21 +29,21 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getAllProducts() {
-        log.info("[getAllProducts] 🚀 entry");
+        log.info("[getAllProducts]  entry");
         List<Product> products = productRepository.findAll();
-        log.info("[getAllProducts] ✅ found {} products", products.size());
+        log.info("[getAllProducts]  found {} products", products.size());
         return products.stream().map(this::toResponse).toList();
     }
 
     @Override
     public ProductResponse getProductById(UUID id) {
-        log.info("[getProductById] 🚀 entry: id={}", id);
+        log.info("[getProductById]  entry: id={}", id);
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("[getProductById] ⚠️ product not found: id={}", id);
+                    log.warn("[getProductById]  product not found: id={}", id);
                     return new ResourceNotFoundException("Product not found");
                 });
-        log.info("[getProductById] ✅ found: id={} name={}", product.getId(), product.getName());
+        log.info("[getProductById]  found: id={} name={}", product.getId(), product.getName());
         return toResponse(product);
     }
 
