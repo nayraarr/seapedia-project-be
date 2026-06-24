@@ -4,15 +4,20 @@ import id.seapedia.seapediaprojectbe.dto.admin.AdminDashboardResponse;
 import id.seapedia.seapediaprojectbe.dto.admin.AdminDeliveryJobResponse;
 import id.seapedia.seapediaprojectbe.dto.admin.AdminOrderResponse;
 import id.seapedia.seapediaprojectbe.dto.admin.AdminUserResponse;
+import id.seapedia.seapediaprojectbe.dto.order.*;
+import id.seapedia.seapediaprojectbe.exception.ResourceNotFoundException;
 import id.seapedia.seapediaprojectbe.model.*;
 import id.seapedia.seapediaprojectbe.repository.*;
 import id.seapedia.seapediaprojectbe.service.AdminService;
 import id.seapedia.seapediaprojectbe.service.SimulationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +31,8 @@ public class AdminServiceImpl implements AdminService {
     private final VoucherRepository voucherRepository;
     private final PromoRepository promoRepository;
     private final DeliveryJobRepository deliveryJobRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final SimulationService simulationService;
 
     @Override
@@ -172,6 +179,74 @@ public class AdminServiceImpl implements AdminService {
                 .deliveryMethod(o.getDeliveryMethod().name())
                 .createdAt(o.getCreatedAt())
                 .build()).toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderDetailResponse getOrderDetail(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        List<OrderItemResponse> items = orderItemRepository.findByOrderIdOrderByCreatedAtAsc(orderId)
+                .stream().map(i -> OrderItemResponse.builder()
+                        .productId(i.getProductId())
+                        .productName(i.getProductName())
+                        .unitPrice(i.getUnitPrice())
+                        .quantity(i.getQuantity())
+                        .subtotal(i.getSubtotal())
+                        .build())
+                .toList();
+
+        List<OrderStatusHistoryResponse> history = orderStatusHistoryRepository.findByOrderIdOrderByCreatedAtAsc(orderId)
+                .stream().map(h -> OrderStatusHistoryResponse.builder()
+                        .status(h.getStatus().name())
+                        .statusLabel(h.getStatus().getLabel())
+                        .changedAt(h.getCreatedAt())
+                        .note(h.getNote())
+                        .build())
+                .toList();
+
+        AddressSnapshotResponse shippingAddress = AddressSnapshotResponse.builder()
+                .addressId(order.getAddressId())
+                .recipientName(order.getRecipientName())
+                .phone(order.getPhone())
+                .fullAddress(order.getFullAddress())
+                .city(order.getCity())
+                .postalCode(order.getPostalCode())
+                .build();
+
+        Optional<DeliveryJob> deliveryJobOpt = deliveryJobRepository.findByOrderId(order.getId());
+
+        return OrderDetailResponse.builder()
+                .orderId(order.getId())
+                .buyerId(order.getBuyerId())
+                .buyerUsername(order.getBuyerUsername())
+                .storeId(order.getStoreId())
+                .storeName(order.getStoreName())
+                .shippingAddress(shippingAddress)
+                .deliveryMethod(order.getDeliveryMethod())
+                .deliveryMethodLabel(order.getDeliveryMethod().getLabel())
+                .status(order.getStatus())
+                .statusLabel(order.getStatus().getLabel())
+                .subtotal(order.getSubtotal())
+                .discountCode(order.getDiscountCode())
+                .discountSource(order.getDiscountSource())
+                .discountAmount(order.getDiscountAmount())
+                .deliveryFee(order.getDeliveryFee())
+                .taxRatePercent(order.getTaxRatePercent())
+                .taxBase(order.getTaxBase())
+                .taxAmount(order.getTaxAmount())
+                .totalAmount(order.getTotalAmount())
+                .walletBalanceBefore(order.getWalletBalanceBefore())
+                .walletBalanceAfter(order.getWalletBalanceAfter())
+                .items(items)
+                .statusHistory(history)
+                .driverAssignedId(deliveryJobOpt.map(DeliveryJob::getDriverId).orElse(null))
+                .deliveryTakenAt(deliveryJobOpt.map(DeliveryJob::getTakenAt).orElse(null))
+                .deliveryCompletedAt(deliveryJobOpt.map(DeliveryJob::getCompletedAt).orElse(null))
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .build();
     }
 
     @Override
