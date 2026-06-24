@@ -37,6 +37,12 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             @Param("deliveryMethod") DeliveryMethod deliveryMethod
     );
 
+    @Query("SELECT o FROM Order o WHERE o.status = :status AND o.updatedAt >= :since")
+    List<Order> findByStatusAndUpdatedAtSince(
+            @Param("status") OrderStatus status,
+            @Param("since") LocalDateTime since
+    );
+
     @Query("SELECT o FROM Order o WHERE o.id = :id AND o.status NOT IN :finalStatuses")
     Optional<Order> findActiveOrderById(
             @Param("id") UUID id,

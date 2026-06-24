@@ -81,7 +81,10 @@ public class AdminServiceImpl implements AdminService {
             LocalDateTime threshold = simulatedNow.minusMinutes(method.getSlaSinceCreatedMinutes());
             overdueList.addAll(orderRepository.findOverdueByDeliveryMethod(finalStatuses, threshold, method));
         }
-        long overdueCount = overdueList.size();
+        List<Order> recentProcessed = orderRepository.findByStatusAndUpdatedAtSince(
+                OrderStatus.DIKEMBALIKAN, simulatedNow.minusHours(24));
+
+        long overdueCount = overdueList.size() + recentProcessed.size();
 
         List<AdminDashboardResponse.OverdueOrderItem> overdueItems = overdueList.stream()
                 .map(o -> {
@@ -93,9 +96,24 @@ public class AdminServiceImpl implements AdminService {
                             .status(o.getStatus().getLabel())
                             .createdAt(o.getCreatedAt().toString())
                             .minutesOverdue(minutesOverdue)
+                            .processed(false)
                             .build();
                 })
-                .toList();
+                .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+
+        for (Order o : recentProcessed) {
+            if (overdueList.stream().anyMatch(ex -> ex.getId().equals(o.getId()))) continue;
+            long minutesSinceUpdate = java.time.Duration.between(o.getUpdatedAt(), simulatedNow).toMinutes();
+            overdueItems.add(AdminDashboardResponse.OverdueOrderItem.builder()
+                    .orderId(o.getId().toString())
+                    .storeName(o.getStoreName())
+                    .buyerUsername(o.getBuyerUsername())
+                    .status(o.getStatus().getLabel())
+                    .createdAt(o.getCreatedAt().toString())
+                    .minutesOverdue(minutesSinceUpdate)
+                    .processed(true)
+                    .build());
+        }
 
         return AdminDashboardResponse.builder()
                 .totalUsers(totalUsers)

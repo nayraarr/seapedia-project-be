@@ -36,4 +36,5 @@ public class OrderSummaryResponse {
     private Long totalAmount;
     private Integer itemCount;
     private LocalDateTime createdAt;
+    private boolean overdue;
 }

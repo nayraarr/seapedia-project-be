@@ -55,5 +55,6 @@ public class AdminDashboardResponse {
         private String status;
         private String createdAt;
         private long minutesOverdue;
+        private boolean processed;
     }
 }

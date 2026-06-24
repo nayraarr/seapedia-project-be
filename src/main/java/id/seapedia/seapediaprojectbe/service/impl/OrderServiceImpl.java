@@ -7,6 +7,7 @@ import id.seapedia.seapediaprojectbe.exception.ResourceNotFoundException;
 import id.seapedia.seapediaprojectbe.model.*;
 import id.seapedia.seapediaprojectbe.repository.*;
 import id.seapedia.seapediaprojectbe.service.OrderService;
+import id.seapedia.seapediaprojectbe.service.SimulationService;
 import id.seapedia.seapediaprojectbe.service.WalletService;
 import id.seapedia.seapediaprojectbe.service.DiscountResolution;
 import id.seapedia.seapediaprojectbe.service.DiscountService;
@@ -37,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final DiscountService discountService;
     private final DeliveryJobRepository deliveryJobRepository;
+    private final SimulationService simulationService;
 
     private record OrderComputation(
             Cart cart,
@@ -174,6 +176,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private OrderSummaryResponse toSummary(Order order) {
+        boolean isFinalStatus = order.getStatus() == OrderStatus.SELESAI
+                || order.getStatus() == OrderStatus.DIKEMBALIKAN;
+        boolean overdue = !isFinalStatus
+                && order.getCreatedAt()
+                        .plusMinutes(order.getDeliveryMethod().getSlaSinceCreatedMinutes())
+                        .isBefore(simulationService.now());
+
         return OrderSummaryResponse.builder()
                 .orderId(order.getId())
                 .storeId(order.getStoreId())
@@ -194,6 +203,7 @@ public class OrderServiceImpl implements OrderService {
                 .totalAmount(order.getTotalAmount())
                 .itemCount(order.getItems().size())
                 .createdAt(order.getCreatedAt())
+                .overdue(overdue)
                 .build();
     }
 
