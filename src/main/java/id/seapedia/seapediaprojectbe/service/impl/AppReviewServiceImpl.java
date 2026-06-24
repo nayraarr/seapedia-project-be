@@ -5,10 +5,12 @@ import id.seapedia.seapediaprojectbe.dto.review.ReviewResponse;
 import id.seapedia.seapediaprojectbe.model.AppReview;
 import id.seapedia.seapediaprojectbe.repository.AppReviewRepository;
 import id.seapedia.seapediaprojectbe.service.AppReviewService;
+import id.seapedia.seapediaprojectbe.util.SanitizerUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.HtmlUtils;
 
 import java.util.List;
 
@@ -22,16 +24,16 @@ public class AppReviewServiceImpl implements AppReviewService {
     @Override
     @Transactional
     public ReviewResponse createReview(ReviewRequest request) {
-        log.info("[createReview]  entry: reviewerName={} rating={}", request.getReviewerName(), request.getRating());
+        log.info("[createReview] entry: reviewerName={} rating={}", request.getReviewerName(), request.getRating());
 
         AppReview review = AppReview.builder()
-                .reviewerName(request.getReviewerName())
+                .reviewerName(SanitizerUtil.clean(request.getReviewerName()))
                 .rating(request.getRating())
-                .comment(request.getComment())
+                .comment(SanitizerUtil.clean(request.getComment()))
                 .build();
 
         review = appReviewRepository.save(review);
-        log.info("[createReview]  review saved: id={}", review.getId());
+        log.info("[createReview] review saved: id={}", review.getId());
 
         return toResponse(review);
     }

@@ -7,6 +7,7 @@ import id.seapedia.seapediaprojectbe.exception.ResourceNotFoundException;
 import id.seapedia.seapediaprojectbe.model.Store;
 import id.seapedia.seapediaprojectbe.repository.StoreRepository;
 import id.seapedia.seapediaprojectbe.service.StoreService;
+import id.seapedia.seapediaprojectbe.util.SanitizerUtil;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,8 +42,8 @@ public class StoreServiceImpl implements StoreService {
         }
 
         Store store = Store.builder()
-                .name(request.getName())
-                .description(request.getDescription())
+                .name(SanitizerUtil.clean(request.getName()))
+                .description(SanitizerUtil.clean(request.getDescription()))
                 .ownerId(ownerId)
                 .build();
 
@@ -69,8 +70,8 @@ public class StoreServiceImpl implements StoreService {
             throw new BadRequestException("Store name already taken");
         }
 
-        store.setName(request.getName());
-        store.setDescription(request.getDescription());
+        store.setName(SanitizerUtil.clean(request.getName()));
+        store.setDescription(SanitizerUtil.clean(request.getDescription()));
         store = storeRepository.save(store);
 
         log.info("[updateStore]  store updated: storeId={} name={}", store.getId(), store.getName());

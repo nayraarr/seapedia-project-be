@@ -6,6 +6,7 @@ import id.seapedia.seapediaprojectbe.exception.ResourceNotFoundException;
 import id.seapedia.seapediaprojectbe.model.Address;
 import id.seapedia.seapediaprojectbe.repository.AddressRepository;
 import id.seapedia.seapediaprojectbe.service.AddressService;
+import id.seapedia.seapediaprojectbe.util.SanitizerUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,11 +56,11 @@ public class AddressServiceImpl implements AddressService {
 
         Address address = Address.builder()
                 .userId(userId)
-                .label(request.getLabel())
-                .recipientName(request.getRecipientName())
+                .label(SanitizerUtil.clean(request.getLabel()))
+                .recipientName(SanitizerUtil.clean(request.getRecipientName()))
                 .phone(request.getPhone())
-                .fullAddress(request.getFullAddress())
-                .city(request.getCity())
+                .fullAddress(SanitizerUtil.clean(request.getFullAddress()))
+                .city(SanitizerUtil.clean(request.getCity()))
                 .postalCode(request.getPostalCode())
                 .isDefault(request.getIsDefault())
                 .build();
@@ -84,11 +85,11 @@ public class AddressServiceImpl implements AddressService {
             unsetAllDefaults(userId);
         }
 
-        address.setLabel(request.getLabel());
-        address.setRecipientName(request.getRecipientName());
+        address.setLabel(SanitizerUtil.clean(request.getLabel()));
+        address.setRecipientName(SanitizerUtil.clean(request.getRecipientName()));
         address.setPhone(request.getPhone());
-        address.setFullAddress(request.getFullAddress());
-        address.setCity(request.getCity());
+        address.setFullAddress(SanitizerUtil.clean(request.getFullAddress()));
+        address.setCity(SanitizerUtil.clean(request.getCity()));
         address.setPostalCode(request.getPostalCode());
         address.setIsDefault(request.getIsDefault());
 

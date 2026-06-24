@@ -9,6 +9,7 @@ import id.seapedia.seapediaprojectbe.model.Promo;
 import id.seapedia.seapediaprojectbe.repository.PromoRepository;
 import id.seapedia.seapediaprojectbe.repository.VoucherRepository;
 import id.seapedia.seapediaprojectbe.service.PromoService;
+import id.seapedia.seapediaprojectbe.util.SanitizerUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -65,7 +66,7 @@ public class PromoServiceImpl implements PromoService {
 
         Promo promo = Promo.builder()
                 .code(normalizedCode)
-                .description(request.getDescription())
+                .description(SanitizerUtil.clean(request.getDescription()))
                 .discountType(request.getDiscountType())
                 .discountValue(request.getDiscountValue())
                 .maxDiscountAmount(request.getMaxDiscountAmount())
