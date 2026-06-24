@@ -50,7 +50,7 @@ public class AdminServiceImpl implements AdminService {
         long oMenungguPengirim = orderRepository.countByStatus(OrderStatus.MENUNGGU_PENGIRIM);
         long oDikirim          = orderRepository.countByStatus(OrderStatus.SEDANG_DIKIRIM);
         long oSelesai          = orderRepository.countByStatus(OrderStatus.SELESAI);
-        long oDibatalkan       = orderRepository.countByStatus(OrderStatus.DIBATALKAN);
+        long oDikembalikan     = orderRepository.countByStatus(OrderStatus.DIKEMBALIKAN);
         Long totalRevenue      = orderRepository.sumTotalRevenue();
 
         List<Voucher> allVouchers = voucherRepository.findAll();
@@ -73,9 +73,14 @@ public class AdminServiceImpl implements AdminService {
         long completedJobs     = deliveryJobRepository.countByCompletedAtIsNotNull();
 
         LocalDateTime simulatedNow = simulationService.now();
-        LocalDateTime threshold = simulatedNow.minusMinutes(60);
-        List<Order> overdueList = orderRepository.findByStatusAndUpdatedAtBefore(
-                OrderStatus.MENUNGGU_PENGIRIM, threshold);
+        List<OrderStatus> finalStatuses = List.of(
+                OrderStatus.SELESAI, OrderStatus.DIKEMBALIKAN);
+
+        List<Order> overdueList = new java.util.ArrayList<>();
+        for (DeliveryMethod method : DeliveryMethod.values()) {
+            LocalDateTime threshold = simulatedNow.minusMinutes(method.getSlaSinceCreatedMinutes());
+            overdueList.addAll(orderRepository.findOverdueByDeliveryMethod(finalStatuses, threshold, method));
+        }
         long overdueCount = overdueList.size();
 
         List<AdminDashboardResponse.OverdueOrderItem> overdueItems = overdueList.stream()
@@ -107,7 +112,7 @@ public class AdminServiceImpl implements AdminService {
                 .ordersMenungguPengirim(oMenungguPengirim)
                 .ordersDikirim(oDikirim)
                 .ordersSelesai(oSelesai)
-                .ordersDibatalkan(oDibatalkan)
+                .ordersDikembalikan(oDikembalikan)
                 .totalRevenue(totalRevenue)
                 .totalVouchers(totalVouchers)
                 .activeVouchers(activeVouchers)

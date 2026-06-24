@@ -130,4 +130,44 @@ public class WalletServiceImpl implements WalletService {
         walletTransactionRepository.save(tx);
         log.info("[deductBalance] ✅ deducted, new balance={}", wallet.getBalance());
     }
+
+    @Override
+    @Transactional
+    public void refundBalance(UUID userId, Long amount, String description) {
+        log.info("[refundBalance] userId={} amount={}", userId, amount);
+        Wallet wallet = getOrCreateWalletForUpdate(userId);
+
+        wallet.setBalance(wallet.getBalance() + amount);
+        wallet = walletRepository.save(wallet);
+
+        WalletTransaction tx = WalletTransaction.builder()
+                .wallet(wallet)
+                .type(TransactionType.REFUND)
+                .amount(amount)
+                .balanceAfter(wallet.getBalance())
+                .description(description)
+                .build();
+        walletTransactionRepository.save(tx);
+        log.info("[refundBalance] refunded, new balance={}", wallet.getBalance());
+    }
+
+    @Override
+    @Transactional
+    public void creditBalance(UUID userId, Long amount, String description) {
+        log.info("[creditBalance] userId={} amount={}", userId, amount);
+        Wallet wallet = getOrCreateWalletForUpdate(userId);
+
+        wallet.setBalance(wallet.getBalance() + amount);
+        wallet = walletRepository.save(wallet);
+
+        WalletTransaction tx = WalletTransaction.builder()
+                .wallet(wallet)
+                .type(TransactionType.REVENUE)
+                .amount(amount)
+                .balanceAfter(wallet.getBalance())
+                .description(description)
+                .build();
+        walletTransactionRepository.save(tx);
+        log.info("[creditBalance] credited, new balance={}", wallet.getBalance());
+    }
 }

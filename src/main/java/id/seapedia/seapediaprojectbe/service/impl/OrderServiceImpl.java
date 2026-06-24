@@ -462,7 +462,7 @@ public class OrderServiceImpl implements OrderService {
         List<Order> orders = orderRepository.findByBuyerIdOrderByCreatedAtDesc(buyerId);
 
         List<Order> validOrders = orders.stream()
-                .filter(o -> o.getStatus() != OrderStatus.DIBATALKAN)
+                .filter(o -> o.getStatus() != OrderStatus.DIKEMBALIKAN)
                 .toList();
 
         long totalSpent = validOrders.stream().mapToLong(Order::getTotalAmount).sum();
@@ -498,7 +498,7 @@ public class OrderServiceImpl implements OrderService {
         List<Order> orders = orderRepository.findByStoreIdOrderByCreatedAtDesc(store.getId());
 
         List<Order> validOrders = orders.stream()
-                .filter(o -> o.getStatus() != OrderStatus.DIBATALKAN)
+                .filter(o -> o.getStatus() != OrderStatus.DIKEMBALIKAN)
                 .toList();
 
         long totalIncome = validOrders.stream().mapToLong(Order::getTotalAmount).sum();
@@ -508,7 +508,7 @@ public class OrderServiceImpl implements OrderService {
                 .filter(o -> o.getStatus() == OrderStatus.SEDANG_DIKEMAS)
                 .count();
         int cancelledOrders = (int) orders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.DIBATALKAN)
+                .filter(o -> o.getStatus() == OrderStatus.DIKEMBALIKAN)
                 .count();
         int processedOrders = orders.size() - incomingOrders - cancelledOrders;
 

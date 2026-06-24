@@ -1,5 +1,6 @@
 package id.seapedia.seapediaprojectbe.repository;
 
+import id.seapedia.seapediaprojectbe.model.TransactionType;
 import id.seapedia.seapediaprojectbe.model.WalletTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -10,4 +11,5 @@ import java.util.UUID;
 @Repository
 public interface WalletTransactionRepository extends JpaRepository<WalletTransaction, UUID> {
     List<WalletTransaction> findByWalletIdOrderByCreatedAtDesc(UUID walletId);
+    List<WalletTransaction> findByWalletIdAndTypeOrderByCreatedAtDesc(UUID walletId, TransactionType type);
 }

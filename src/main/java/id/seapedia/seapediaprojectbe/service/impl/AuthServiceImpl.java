@@ -6,8 +6,13 @@ import id.seapedia.seapediaprojectbe.exception.ResourceNotFoundException;
 import id.seapedia.seapediaprojectbe.model.RoleType;
 import id.seapedia.seapediaprojectbe.model.User;
 import id.seapedia.seapediaprojectbe.model.UserRole;
+import id.seapedia.seapediaprojectbe.model.TransactionType;
+import id.seapedia.seapediaprojectbe.model.Wallet;
+import id.seapedia.seapediaprojectbe.model.WalletTransaction;
 import id.seapedia.seapediaprojectbe.repository.UserRepository;
 import id.seapedia.seapediaprojectbe.repository.UserRoleRepository;
+import id.seapedia.seapediaprojectbe.repository.WalletRepository;
+import id.seapedia.seapediaprojectbe.repository.WalletTransactionRepository;
 import id.seapedia.seapediaprojectbe.security.JwtTokenProvider;
 import id.seapedia.seapediaprojectbe.service.AuthService;
 import id.seapedia.seapediaprojectbe.service.WalletService;
@@ -33,6 +38,8 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
+    private final WalletRepository walletRepository;
+    private final WalletTransactionRepository walletTransactionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
@@ -143,7 +150,6 @@ public class AuthServiceImpl implements AuthService {
             List<String> roles = user.getRoles().stream()
                     .map(r -> r.getRole().name()).toList();
 
-            // kalau admin, langsung set activeRole ADMIN
             String activeRole;
             boolean requiresRoleSelection;
 
@@ -266,18 +272,37 @@ public class AuthServiceImpl implements AuthService {
         log.info("[getFinancialSummary] 🚀 entry: userId={}", userId);
 
         Long walletBalance = 0L;
+        Long sellerIncome = 0L;
+        Long driverEarnings = 0L;
+
         try {
             walletBalance = walletService.getWallet(userId).getBalance();
+
+            var walletOpt = walletRepository.findByUserId(userId);
+            if (walletOpt.isPresent()) {
+                List<WalletTransaction> revenueTxs = walletTransactionRepository
+                        .findByWalletIdAndTypeOrderByCreatedAtDesc(walletOpt.get().getId(), TransactionType.REVENUE);
+
+                for (WalletTransaction tx : revenueTxs) {
+                    String desc = tx.getDescription() != null ? tx.getDescription() : "";
+                    if (desc.startsWith("Pendapatan dari pesanan")) {
+                        sellerIncome += tx.getAmount();
+                    } else if (desc.startsWith("Pendapatan pengiriman")) {
+                        driverEarnings += tx.getAmount();
+                    }
+                }
+            }
         } catch (Exception e) {
-            log.warn("[getFinancialSummary] ⚠️ could not fetch wallet balance: {}", e.getMessage());
+            log.warn("[getFinancialSummary] ⚠️ error: {}", e.getMessage());
         }
 
         FinancialSummaryResponse response = FinancialSummaryResponse.builder()
                 .walletBalance(walletBalance)
-                .sellerIncome(0L)
-                .driverEarnings(0L)
+                .sellerIncome(sellerIncome)
+                .driverEarnings(driverEarnings)
                 .build();
-        log.info("[getFinancialSummary] ✅ exit: userId={} walletBalance={}", userId, walletBalance);
+        log.info("[getFinancialSummary] ✅ exit: userId={} walletBalance={} sellerIncome={} driverEarnings={}",
+                userId, walletBalance, sellerIncome, driverEarnings);
         return response;
     }
 }
