@@ -11,4 +11,5 @@ public interface AuthService {
     UserProfileResponse getProfile(UUID userId);
     FinancialSummaryResponse getFinancialSummary(UUID userId);
     void logout(String token);
+    AuthResponse refresh(String token);
 }

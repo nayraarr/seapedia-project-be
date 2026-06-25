@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -61,5 +63,16 @@ public class AuthController {
             authService.logout(header.substring(7));
         }
         return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ")) {
+            return ResponseEntity.status(401)
+                    .body(ApiResponse.error("Token tidak ditemukan", List.of("Authorization header missing")));
+        }
+        AuthResponse data = authService.refresh(header.substring(7));
+        return ResponseEntity.ok(ApiResponse.success("Token refreshed", data));
     }
 }

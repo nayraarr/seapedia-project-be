@@ -320,4 +320,44 @@ public class AuthServiceImpl implements AuthService {
             log.warn("[logout] could not extract jti, token may already be invalid: {}", e.getMessage());
         }
     }
+
+    @Override
+    public AuthResponse refresh(String token) {
+        log.info("[refresh] entry");
+
+        if (!jwtTokenProvider.validateToken(token)) {
+            throw new BadRequestException("Token tidak valid atau sudah expired");
+        }
+
+        String oldJti = jwtTokenProvider.extractJti(token);
+        if (oldJti != null && tokenBlacklistService.isBlacklisted(oldJti)) {
+            throw new BadRequestException("Token sudah tidak aktif");
+        }
+
+        io.jsonwebtoken.Claims claims = jwtTokenProvider.extractClaims(token);
+        UUID userId = UUID.fromString((String) claims.get("userId"));
+        String activeRole = (String) claims.get("activeRole");
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (oldJti != null) {
+            tokenBlacklistService.blacklist(oldJti);
+            log.info("[refresh] old token blacklisted: jti={}", oldJti);
+        }
+
+        String newToken = jwtTokenProvider.generateToken(user, activeRole);
+        List<String> roles = user.getRoles().stream()
+                .map(r -> r.getRole().name()).toList();
+
+        log.info("[refresh] new token issued: userId={} activeRole={}", userId, activeRole);
+
+        return AuthResponse.builder()
+                .token(newToken)
+                .username(user.getUsername())
+                .roles(roles)
+                .activeRole(activeRole)
+                .requiresRoleSelection(false)
+                .build();
+    }
 }
