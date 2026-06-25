@@ -56,8 +56,9 @@ public class DriverDeliveryController {
     @GetMapping("/{jobId}")
     @PreAuthorize("hasRole('DRIVER')")
     public ResponseEntity<ApiResponse<DeliveryJobDetailResponse>> getJobDetail(
-            @PathVariable UUID jobId) {
-        DeliveryJobDetailResponse data = deliveryService.getJobDetail(jobId);
+            @PathVariable UUID jobId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        DeliveryJobDetailResponse data = deliveryService.getJobDetail(jobId, userDetails.getUserId()); // <-- pass driverId
         return ResponseEntity.ok(ApiResponse.success("Delivery job detail fetched", data));
     }
 

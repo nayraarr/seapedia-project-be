@@ -54,11 +54,15 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional(readOnly = true)
-    public DeliveryJobDetailResponse getJobDetail(UUID jobId) {
-        log.info("[getJobDetail] jobId={}", jobId);
+    public DeliveryJobDetailResponse getJobDetail(UUID jobId, UUID driverId) {
+        log.info("[getJobDetail] jobId={} driverId={}", jobId, driverId);
 
         DeliveryJob job = deliveryJobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Delivery job not found"));
+
+        if (job.getDriverId() != null && !job.getDriverId().equals(driverId)) {
+            throw new BadRequestException("Anda tidak memiliki akses ke job ini");
+        }
 
         return toDetail(job);
     }
