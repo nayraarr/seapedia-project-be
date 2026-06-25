@@ -4,6 +4,7 @@ import id.seapedia.seapediaprojectbe.dto.auth.*;
 import id.seapedia.seapediaprojectbe.dto.common.ApiResponse;
 import id.seapedia.seapediaprojectbe.security.CustomUserDetails;
 import id.seapedia.seapediaprojectbe.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -51,5 +52,14 @@ public class AuthController {
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         FinancialSummaryResponse data = authService.getFinancialSummary(userDetails.getUserId());
         return ResponseEntity.ok(ApiResponse.success("Financial summary fetched", data));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            authService.logout(header.substring(7));
+        }
+        return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
     }
 }

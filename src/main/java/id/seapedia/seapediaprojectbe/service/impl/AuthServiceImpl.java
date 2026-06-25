@@ -14,6 +14,7 @@ import id.seapedia.seapediaprojectbe.repository.UserRoleRepository;
 import id.seapedia.seapediaprojectbe.repository.WalletRepository;
 import id.seapedia.seapediaprojectbe.repository.WalletTransactionRepository;
 import id.seapedia.seapediaprojectbe.security.JwtTokenProvider;
+import id.seapedia.seapediaprojectbe.security.TokenBlacklistService;
 import id.seapedia.seapediaprojectbe.service.AuthService;
 import id.seapedia.seapediaprojectbe.service.WalletService;
 import jakarta.persistence.EntityManager;
@@ -44,6 +45,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final WalletService walletService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -304,5 +306,18 @@ public class AuthServiceImpl implements AuthService {
         log.info("[getFinancialSummary]  exit: userId={} walletBalance={} sellerIncome={} driverEarnings={}",
                 userId, walletBalance, sellerIncome, driverEarnings);
         return response;
+    }
+
+    @Override
+    public void logout(String token) {
+        try {
+            String jti = jwtTokenProvider.extractJti(token);
+            if (jti != null) {
+                tokenBlacklistService.blacklist(jti);
+                log.info("[logout] token blacklisted: jti={}", jti);
+            }
+        } catch (Exception e) {
+            log.warn("[logout] could not extract jti, token may already be invalid: {}", e.getMessage());
+        }
     }
 }

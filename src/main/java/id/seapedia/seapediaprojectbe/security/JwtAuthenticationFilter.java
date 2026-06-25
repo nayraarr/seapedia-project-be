@@ -18,6 +18,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -28,6 +29,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = extractToken(request);
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
+            String jti = jwtTokenProvider.extractJti(token);
+            if (jti != null && tokenBlacklistService.isBlacklisted(jti)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             Claims claims = jwtTokenProvider.extractClaims(token);
             CustomUserDetails userDetails = CustomUserDetails.fromClaims(claims);
 
