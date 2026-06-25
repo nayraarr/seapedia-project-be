@@ -99,22 +99,22 @@ spring.jpa.defer-datasource-initialization=true
 
 Setiap INSERT memakai ON CONFLICT (id) DO NOTHING, sehingga aman dijalankan berulang kali.
 
-**Demo Accounts**
+**Demo Accounts — Multi-Role**
 
-| Role     | Username   | Email                | Password     | Keterangan                                              |
-|----------|------------|----------------------|---------------|---------------------------------------------------------|
-| Admin    | `admin`    | admin@example.com    | `admin123`    | `is_admin = true`, akses penuh platform seapedia        |
-| Seller   | `seller01` | seller01@example.com | `seller123`   | Pemilik toko Toko Jaya Abadi beserta 2 produk           |
-| Buyer    | `buyer01`  | buyer01@example.com  | `buyer123`    | Sudah punya saldo wallet Rp1.000.000 & 1 alamat default |
-| Driver   | `driver01` | driver01@example.com | `driver123`   | Role DRIVER yang siap menerima delivery job             |
+| Username | Role                         | Password   | Saldo Wallet | Toko                    | Produk                                                        | Alamat           |
+|----------|------------------------------|------------|-------------|-------------------------|---------------------------------------------------------------|------------------|
+| `admin`  | Admin                        | `admin123` | Rp0         | —                       | —                                                             | —                |
+| `budi`   | **SELLER + BUYER**           | `budi123`  | Rp500.000   | Toko Segar Laut         | Salmon 500g, Udang Vannamei 1kg, Cumi-Cumi 500g              | Jl. Kenanga, Jaktim |
+| `sari`   | **BUYER + DRIVER**           | `sari123`  | Rp750.000   | —                       | —                                                             | Jl. Melati & Kantor, Bandung |
+| `dimas`  | **SELLER + DRIVER**          | `dimas123` | —           | Toko Elektronik         | Power Bank 10000mAh, Earphone Bluetooth, Kabel USB-C 2m       | —                |
+| `rina`   | **BUYER + SELLER + DRIVER**  | `rina123`  | Rp1.000.000 | Toko Fashion            | Topi Snapback, Tote Bag Kanvas, Scarf Polos                   | Jl. Anggrek, Surabaya |
 
-Login menggunakan endpoint `POST /api/auth/login` dengan body:
-```json
-{
-  "username": "buyer01",
-  "password": "buyer123"
-}
-```
+> Login menggunakan endpoint `POST /api/auth/login`. Jika user memiliki lebih dari satu role, sistem akan mengarahkan ke halaman **select-role** untuk memilih role aktif.
+>
+> Contoh login sebagai `budi`:
+> ```json
+> { "username": "budi", "password": "budi123" }
+> ```
 
 
 ---
@@ -243,7 +243,7 @@ Seluruh query database menggunakan Spring Data JPA dengan method derivation (fin
 
 ### XSS (Cross-Site Scripting)
 
-XSS dicegah di frontend (React) melalui auto-escaping bawaan. `{variable}` tidak akan merender HTML. SanitizerUtil.clean() di backend hanya melakukan trim() untuk menghapus whitespace. Tag HTML sengaja tidak di-strip agar konten seperti `<suka suka aja>` tidak rusak.
+Input teks dari user (nama produk, deskripsi) diproses melalui `SanitizerUtil.clean()` sebelum disimpan ke database. Saat ini sanitizer melakukan `trim()`. Untuk produksi, disarankan mengintegrasikan library Jsoup untuk strip HTML tags.
 
 ### Input Validation
 
@@ -262,12 +262,12 @@ Error validasi dikembalikan sebagai **400 Bad Request** dengan daftar field yang
 
 | Aspek                   | Behavior                                                                     |
 |-------------------------|------------------------------------------------------------------------------|
-| Tipe session            | Stateless                                                                    |
-| Default expiry          | 15 menit (`JWT_EXPIRATION=900000`)                                           |
+| Tipe session            | Stateless — tidak ada HTTP session, hanya JWT                            |
+| Default expiry          | 15 menit (`JWT_EXPIRATION=900000`)                                       |
 | Override expiry         | Set env var `JWT_EXPIRATION` dalam milliseconds                              |
 | Refresh token           | Token di-refresh otomatis oleh frontend jika sisa waktu kurang 2 menit       |
 | Logout aktif            | Token di-blacklist via `jti` (JWT ID) di in-memory store                     |
-| Blacklist persistence   | In-memory, hilang saat server restart                                        |
+| Blacklist persistence   | In-memory — hilang saat server restart (acceptable untuk development)    |
 | Token setelah refresh   | Token lama langsung di-blacklist. Lalu, satu token hanya bisa refresh sekali |
 
 ### Role-Based Access Control
@@ -309,8 +309,12 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | POST   | `/api/auth/login`         | Public | Login, terima token                    |
 | POST   | `/api/auth/select-role`   | Auth   | Pilih role aktif                       |
 | POST   | `/api/auth/logout`        | Auth   | Logout, blacklist token                |
-| POST   | `/api/auth/refresh`       | Public | Silent refresh token                   |
+| POST   | `/api/auth/refresh`       | Public* | Silent refresh token                   |
 | GET    | `/api/auth/me`            | Auth   | Profil user aktif                      |
+
+> *Refresh tetap membutuhkan token valid di header Authorization — token lama digunakan untuk validasi dan penerbitan token baru.
+
+
 | GET    | `/api/auth/me/summary`    | Auth   | Ringkasan keuangan user aktif          |
 
 ---
@@ -466,3 +470,105 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | POST   | `/api/admin/vouchers`     | ADMIN | Buat voucher baru  |
 | GET    | `/api/admin/promos`       | ADMIN | Daftar semua promo |
 | POST   | `/api/admin/promos`       | ADMIN | Buat promo baru    |
+
+---
+
+## Testing Guide
+
+---
+
+### Persiapan (lengkapnya untuk frontend ada di README frontend)
+
+1. Jalankan backend (`./gradlew bootRun`) dan frontend (`npm run dev`).
+2. Pastikan database PostgreSQL sudah berjalan dan environment variables sudah dikonfigurasi.
+3. Pastikan user admin sudah ada di database (lihat bagian Admin Setup di README backend).
+
+---
+
+### Skenario 0: Guest bisa melihat katalog & review aplikasi
+Step di bawah ini dilakukan tanpa login atau register terlebih dahulu:
+
+1. buka `/products` lalu guest bisa melihat daftar produk dan masuk ke detail produknya (`/products/{id}`).
+2. Buka `/stores` dan detail toko lalu guest bisa melihat profil toko tanpa login.
+3. Di endpoint `/` atau Home, cari section Ulasan Aplikasi lalu guest mengisi nama, rating, dan komentar dan bisa submit review tanpa login.
+4. Refresh halaman lalu review yang baru disubmit tampil di antarmuka.
+5. Coba submit review dengan komentar berisi tag HTML/script, contoh: `<script>alert(1)</script>` atau `<b>test</b>`. Frontend menampilkan sebagai text biasa dan tidak dieksekusi sebagai HTML.
+
+---
+
+### Skenario 1: Registrasi dan login multi-Role
+
+1. Buka `/register`, daftarkan user dengan role BUYER, SELLER, dan DRIVER sekaligus.
+2. Login akun tersebut. Karena memiliki beberapa role, user diarahkan ke `/select-role`.
+3. Pilih role SELLER lalu token baru diberikan dengan `activeRole: SELLER`.
+4. Coba akses `/dashboard/buyer` secara manual di URL bar. Platform akan redirect ke `/dashboard/seller` (bukan error).
+
+---
+
+### Skenario 2: Seller bisa melakukan setup toko dan produk
+
+1. Login sebagai Seller.
+2. Buat toko dengan nama tertentu.
+3. Coba edit toko dengan nama yang sama menggunakan akun seller lain. Sistem pasti akan menolak (nama toko harus unik).
+4. Buka Kelola Produk, tambahkan minimal 2 produk dengan stok lebih dari 0.
+5. Buka `/products` (sebagai guest/buyer). Kedua produk yang baru dibuat muncul di katalog publik.
+6. Coba update/edit salah satu produk (ubah harga/stok) dan hapus produk lainnya. Perubahan ini tercermin di katalog publik.
+
+---
+
+### Skenario 3: Buyer melakukan top up, kelola address, dan checkout single-store
+
+1. Login sebagai Buyer (akun berbeda dari Seller).
+2. Buka Wallet, lakukan top-up sehingga saldo bertambah, transaksi tercatat di riwayat wallet.
+3. Dari dashboar, buka alamat pengiriman, tambahkan alamat baru dan set sebagai default.
+4. Buka halaman produk, tambahkan produk dari dari suatu toko ke cart.
+5. Coba tambahkan produk dari toko lain maka muncul banner konflik di halaman cart, tombol checkout nonaktif.
+6. Kosongkan cart, tambah produk dari satu toko saja.
+7. Buka halaman cart, pilih alamat dan metode pengiriman.
+8. Masukkan kode diskon Voucher lalu lihat preview. Ulangi dengan kode Promo di transaksi lain untuk membandingkan kedua tipe diskon.
+9. Preview checkout menampilkan subtotal, discountAmount, delivery fee, PPN 12%, dan totalAmount secara terpisah.
+10. Konfirmasi checkout lalu order terbuat dengan status awal Sedang Dikemas. Cek stok produk berkurang dan saldo wallet berkurang.
+
+---
+
+### Skenario 4: Seller melakukan proses order
+
+1. Login sebagai Seller.
+2. Buka Order Masuk, lalu order dari buyer muncul dengan status Sedang Dikemas.
+3. Klik Proses maka status berubah menjadi Menunggu Pengirim, job pengiriman tersedia untuk driver.
+
+---
+
+### Skenario 5: Driver bisa mencari, mengambil dan menyelesaikan Job
+
+1. Login sebagai Driver.
+2. Buka Job Tersedia, maka job dari order yang diproses seller muncul.
+3. Klik Ambil Job maka status order berubah menjadi `SEDANG_DIKIRIM`, job akan dipindah ke Job Aktif.
+4. Buka detail job, driver lain tidak bisa mengakses job ini (dicoba login menggunakan akun driver lain).
+5. Klik Selesaikan (Konfirmasi Job Selesai) maka status order berubah menjadi `SELESAI`, wallet driver dan seller dikreditkan.
+6. Buka Riwayat & Penghasilan maka job yang baru selesai dan earning-nya tercatat.
+
+---
+
+### Skenario 6: Buyer bisa melihat riwayat dan status order
+
+1. Login sebagai Buyer yang sama dari Skenario 3.
+2. Buka Riwayat Pesanan  maka order yang sudah dibuat tampil dengan status terkini (SELESAI, sesuai dengan Skenario 5).
+3. Klik salah satu order, buka detailnya, maka menampilkan timeline status* (Sedang Dikemas → Menunggu Pengirim → Sedang Dikirim → Selesai) lengkap dengan timestamp tiap perubahan.
+
+---
+
+### Skenario 7: Admin dapat memonitoring, melakukan discount management, dan simulasi overdue
+
+1. Login sebagai Admin.
+2. Monitoring dilakukan dengan membuka Admin Dashboard, lalu cek masing-masing menu Pengguna Terbaru, Toko Terbaru, Produk Terbaru, Pesanan Terbaru, Diskon Terbaru (Voucher/Promo), dan Delivery Job Terbaru.
+3. Admin bisa membuat dan melihat seluruh voucher baru (misal kode, persentase, tanggal expired) dan promo baru.
+4. Admin bisa melakukan simulasi overdue:
+    - Buat order baru sebagai Buyer, proses oleh Seller, tetapi jangan diambil driver.
+    - Lihat tab Simulasi Waktu, advance/majukan waktu sesuai SLA metode yang dipilih:
+        - INSTANT: minimal 121 menit
+        - NEXT DAY: minimal 2.881 menit
+        - REGULAR: minimal 10.081 menit
+    - Trigger Proses Overdue (atau tunggu scheduler otomatis tiap 30 menit).
+    - Cek order sebagai Buyer. Maka statusnya berubah menjadi `DIKEMBALIKAN`, saldo wallet buyer kembali ke nilai sebelum checkout, dan stok produk terkait auto-return.
+---
