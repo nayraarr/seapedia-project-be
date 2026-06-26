@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface DeliveryService {
     List<DeliveryJobSummaryResponse> getAvailableJobs();
-    DeliveryJobDetailResponse getJobDetail(UUID jobId);
+    DeliveryJobDetailResponse getJobDetail(UUID jobId, UUID driverId);
     DeliveryJobDetailResponse takeJob(UUID jobId, UUID driverId);
     List<DeliveryJobSummaryResponse> getActiveJobs(UUID driverId);
     List<DeliveryJobSummaryResponse> getJobHistory(UUID driverId);

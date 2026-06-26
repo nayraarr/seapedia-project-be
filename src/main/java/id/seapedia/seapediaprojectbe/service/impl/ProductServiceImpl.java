@@ -9,6 +9,7 @@ import id.seapedia.seapediaprojectbe.model.Store;
 import id.seapedia.seapediaprojectbe.repository.ProductRepository;
 import id.seapedia.seapediaprojectbe.repository.StoreRepository;
 import id.seapedia.seapediaprojectbe.service.ProductService;
+import id.seapedia.seapediaprojectbe.util.SanitizerUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,21 +30,21 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductResponse> getAllProducts() {
-        log.info("[getAllProducts] 🚀 entry");
+        log.info("[getAllProducts]  entry");
         List<Product> products = productRepository.findAll();
-        log.info("[getAllProducts] ✅ found {} products", products.size());
+        log.info("[getAllProducts]  found {} products", products.size());
         return products.stream().map(this::toResponse).toList();
     }
 
     @Override
     public ProductResponse getProductById(UUID id) {
-        log.info("[getProductById] 🚀 entry: id={}", id);
+        log.info("[getProductById]  entry: id={}", id);
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> {
-                    log.warn("[getProductById] ⚠️ product not found: id={}", id);
+                    log.warn("[getProductById]  product not found: id={}", id);
                     return new ResourceNotFoundException("Product not found");
                 });
-        log.info("[getProductById] ✅ found: id={} name={}", product.getId(), product.getName());
+        log.info("[getProductById]  found: id={} name={}", product.getId(), product.getName());
         return toResponse(product);
     }
 
@@ -61,8 +62,8 @@ public class ProductServiceImpl implements ProductService {
         Store store = storeRepository.findByOwnerId(sellerId)
                 .orElseThrow(() -> new BadRequestException("Kamu belum punya toko"));
         Product product = Product.builder()
-                .name(request.getName())
-                .description(request.getDescription())
+                .name(SanitizerUtil.clean(request.getName()))
+                .description(SanitizerUtil.clean(request.getDescription()))
                 .price(request.getPrice())
                 .stock(request.getStock())
                 .store(store)
@@ -77,8 +78,8 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new BadRequestException("Kamu belum punya toko"));
         Product product = productRepository.findByIdAndStoreId(productId, store.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Produk tidak ditemukan atau bukan milikmu"));
-        product.setName(request.getName());
-        product.setDescription(request.getDescription());
+        product.setName(SanitizerUtil.clean(request.getName()));
+        product.setDescription(SanitizerUtil.clean(request.getDescription()));
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
         return toResponse(productRepository.save(product));

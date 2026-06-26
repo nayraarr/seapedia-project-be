@@ -28,6 +28,7 @@ public class JwtTokenProvider {
         claims.put("username", user.getUsername());
         claims.put("isAdmin", user.getIsAdmin());
         claims.put("activeRole", activeRole);
+        claims.put("jti", UUID.randomUUID().toString());
 
         List<String> roles = user.getRoles().stream()
                 .map(r -> r.getRole().name())
@@ -58,6 +59,10 @@ public class JwtTokenProvider {
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public String extractJti(String token) {
+        return (String) extractClaims(token).get("jti");
     }
 
     private Key getSigningKey() {

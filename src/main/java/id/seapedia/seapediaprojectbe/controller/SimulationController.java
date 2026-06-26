@@ -10,11 +10,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/admin/simulate")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class SimulationController {
 
     private final SimulationService simulationService;

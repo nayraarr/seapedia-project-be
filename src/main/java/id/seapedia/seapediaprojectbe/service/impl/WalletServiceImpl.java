@@ -29,7 +29,7 @@ public class WalletServiceImpl implements WalletService {
     private Wallet getOrCreateWallet(UUID userId) {
         return walletRepository.findByUserId(userId)
                 .orElseGet(() -> {
-                    log.info("[getOrCreateWallet] 🆕 creating wallet for userId={}", userId);
+                    log.info("[getOrCreateWallet]  creating wallet for userId={}", userId);
                     Wallet w = Wallet.builder().userId(userId).balance(0L).build();
                     return walletRepository.save(w);
                 });
@@ -66,16 +66,16 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional(readOnly = true)
     public WalletResponse getWallet(UUID userId) {
-        log.info("[getWallet] 🚀 entry: userId={}", userId);
+        log.info("[getWallet]  entry: userId={}", userId);
         Wallet wallet = getOrCreateWallet(userId);
-        log.info("[getWallet] ✅ balance={}", wallet.getBalance());
+        log.info("[getWallet]  balance={}", wallet.getBalance());
         return toResponse(wallet);
     }
 
     @Override
     @Transactional
     public WalletResponse topUp(UUID userId, TopUpRequest request) {
-        log.info("[topUp] 🚀 entry: userId={} amount={}", userId, request.getAmount());
+        log.info("[topUp]  entry: userId={} amount={}", userId, request.getAmount());
 
         Wallet wallet = getOrCreateWalletForUpdate(userId);
         wallet.setBalance(wallet.getBalance() + request.getAmount());
@@ -90,29 +90,29 @@ public class WalletServiceImpl implements WalletService {
                 .build();
         walletTransactionRepository.save(tx);
 
-        log.info("[topUp] ✅ new balance={} walletId={}", wallet.getBalance(), wallet.getId());
+        log.info("[topUp]  new balance={} walletId={}", wallet.getBalance(), wallet.getId());
         return toResponse(wallet);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<WalletTransactionResponse> getTransactionHistory(UUID userId) {
-        log.info("[getTransactionHistory] 🚀 entry: userId={}", userId);
+        log.info("[getTransactionHistory]  entry: userId={}", userId);
         Wallet wallet = getOrCreateWallet(userId);
         List<WalletTransaction> txList =
                 walletTransactionRepository.findByWalletIdOrderByCreatedAtDesc(wallet.getId());
-        log.info("[getTransactionHistory] ✅ found {} transactions", txList.size());
+        log.info("[getTransactionHistory]  found {} transactions", txList.size());
         return txList.stream().map(this::toTxResponse).toList();
     }
 
     @Override
     @Transactional
     public void deductBalance(UUID userId, Long amount, String description) {
-        log.info("[deductBalance] 🚀 entry: userId={} amount={}", userId, amount);
+        log.info("[deductBalance]  entry: userId={} amount={}", userId, amount);
         Wallet wallet = getOrCreateWalletForUpdate(userId);
 
         if (wallet.getBalance() < amount) {
-            log.warn("[deductBalance] ⚠️ insufficient balance: balance={} needed={}",
+            log.warn("[deductBalance]  insufficient balance: balance={} needed={}",
                     wallet.getBalance(), amount);
             throw new BadRequestException("Insufficient wallet balance");
         }
@@ -128,7 +128,7 @@ public class WalletServiceImpl implements WalletService {
                 .description(description)
                 .build();
         walletTransactionRepository.save(tx);
-        log.info("[deductBalance] ✅ deducted, new balance={}", wallet.getBalance());
+        log.info("[deductBalance]  deducted, new balance={}", wallet.getBalance());
     }
 
     @Override

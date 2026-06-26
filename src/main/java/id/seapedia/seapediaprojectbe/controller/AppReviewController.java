@@ -22,18 +22,18 @@ public class AppReviewController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ReviewResponse>>> getAllReviews() {
-        log.info("[GET /api/reviews] 🚀 request received");
+        log.info("[GET /api/reviews]  request received");
         List<ReviewResponse> data = appReviewService.getAllReviews();
-        log.info("[GET /api/reviews] ✅ returning {} reviews", data.size());
+        log.info("[GET /api/reviews]  returning {} reviews", data.size());
         return ResponseEntity.ok(ApiResponse.success("Reviews fetched", data));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponse<ReviewResponse>> createReview(
             @Valid @RequestBody ReviewRequest request) {
-        log.info("[POST /api/reviews] 🚀 request received: reviewerName={}", request.getReviewerName());
+        log.info("[POST /api/reviews]  request received: reviewerName={}", request.getReviewerName());
         ReviewResponse data = appReviewService.createReview(request);
-        log.info("[POST /api/reviews] ✅ review created: id={}", data.getId());
+        log.info("[POST /api/reviews]  review created: id={}", data.getId());
         return ResponseEntity.ok(ApiResponse.success("Review created", data));
     }
 }

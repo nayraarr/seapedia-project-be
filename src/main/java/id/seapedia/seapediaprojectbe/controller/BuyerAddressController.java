@@ -28,7 +28,7 @@ public class BuyerAddressController {
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<ApiResponse<List<AddressResponse>>> getAddresses(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[GET /buyer/addresses] 🚀 userId={}", userDetails.getUserId());
+        log.info("[GET /buyer/addresses]  userId={}", userDetails.getUserId());
         List<AddressResponse> data = addressService.getMyAddresses(userDetails.getUserId());
         return ResponseEntity.ok(ApiResponse.success("Addresses fetched", data));
     }
@@ -38,7 +38,7 @@ public class BuyerAddressController {
     public ResponseEntity<ApiResponse<AddressResponse>> createAddress(
             @Valid @RequestBody AddressRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[POST /buyer/addresses] 🚀 userId={}", userDetails.getUserId());
+        log.info("[POST /buyer/addresses]  userId={}", userDetails.getUserId());
         AddressResponse data = addressService.createAddress(userDetails.getUserId(), request);
         return ResponseEntity.ok(ApiResponse.success("Address created", data));
     }
@@ -49,7 +49,7 @@ public class BuyerAddressController {
             @PathVariable UUID id,
             @Valid @RequestBody AddressRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[PUT /buyer/addresses/{}] 🚀 userId={}", id, userDetails.getUserId());
+        log.info("[PUT /buyer/addresses/{}]  userId={}", id, userDetails.getUserId());
         AddressResponse data = addressService.updateAddress(userDetails.getUserId(), id, request);
         return ResponseEntity.ok(ApiResponse.success("Address updated", data));
     }
@@ -59,7 +59,7 @@ public class BuyerAddressController {
     public ResponseEntity<ApiResponse<Void>> deleteAddress(
             @PathVariable UUID id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[DELETE /buyer/addresses/{}] 🚀 userId={}", id, userDetails.getUserId());
+        log.info("[DELETE /buyer/addresses/{}]  userId={}", id, userDetails.getUserId());
         addressService.deleteAddress(userDetails.getUserId(), id);
         return ResponseEntity.ok(ApiResponse.success("Address deleted", null));
     }
@@ -69,7 +69,7 @@ public class BuyerAddressController {
     public ResponseEntity<ApiResponse<AddressResponse>> setDefault(
             @PathVariable UUID id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        log.info("[PATCH /buyer/addresses/{}/default] 🚀 userId={}", id, userDetails.getUserId());
+        log.info("[PATCH /buyer/addresses/{}/default]  userId={}", id, userDetails.getUserId());
         AddressResponse data = addressService.setDefaultAddress(userDetails.getUserId(), id);
         return ResponseEntity.ok(ApiResponse.success("Default address updated", data));
     }

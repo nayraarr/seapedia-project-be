@@ -10,4 +10,6 @@ public interface AuthService {
     AuthResponse selectRole(SelectRoleRequest request, UUID userId);
     UserProfileResponse getProfile(UUID userId);
     FinancialSummaryResponse getFinancialSummary(UUID userId);
+    void logout(String token);
+    AuthResponse refresh(String token);
 }

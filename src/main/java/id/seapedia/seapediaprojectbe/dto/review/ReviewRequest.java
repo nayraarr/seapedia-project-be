@@ -6,6 +6,7 @@ import lombok.*;
 @Data @NoArgsConstructor @AllArgsConstructor
 public class ReviewRequest {
     @NotBlank(message = "Reviewer name is required")
+    @Size(max = 50, message = "Reviewer name max 50 characters")
     private String reviewerName;
 
     @NotNull(message = "Rating is required")
@@ -14,5 +15,6 @@ public class ReviewRequest {
     private Integer rating;
 
     @NotBlank(message = "Comment is required")
+    @Size(max = 1000, message = "Comment max 1000 characters")
     private String comment;
 }

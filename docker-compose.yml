@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: seapedia-db
+    environment:
+      POSTGRES_DB: seapedia
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - seapedia-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: seapedia-be
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/seapedia
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: yourpassword
+      JWT_SECRET: ganti-dengan-hasil-openssl-rand-base64-32
+      JWT_EXPIRATION: 900000
+      ALLOWED_ORIGINS: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../seapedia-project-fe
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8080/api
+    container_name: seapedia-fe
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  seapedia-data:

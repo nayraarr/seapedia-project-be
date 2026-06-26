@@ -7,6 +7,7 @@ import id.seapedia.seapediaprojectbe.exception.ResourceNotFoundException;
 import id.seapedia.seapediaprojectbe.model.Store;
 import id.seapedia.seapediaprojectbe.repository.StoreRepository;
 import id.seapedia.seapediaprojectbe.service.StoreService;
+import id.seapedia.seapediaprojectbe.util.SanitizerUtil;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,86 +29,86 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @Transactional
     public StoreResponse createStore(StoreRequest request, UUID ownerId) {
-        log.info("[createStore] 🚀 entry: ownerId={} name={}", ownerId, request.getName());
+        log.info("[createStore]  entry: ownerId={} name={}", ownerId, request.getName());
 
         if (storeRepository.existsByName(request.getName())) {
-            log.warn("[createStore] ⚠️ store name already taken: name={}", request.getName());
+            log.warn("[createStore]  store name already taken: name={}", request.getName());
             throw new BadRequestException("Store name already taken");
         }
 
         if (storeRepository.findByOwnerId(ownerId).isPresent()) {
-            log.warn("[createStore] ⚠️ seller already has a store: ownerId={}", ownerId);
+            log.warn("[createStore]  seller already has a store: ownerId={}", ownerId);
             throw new BadRequestException("You already have a store");
         }
 
         Store store = Store.builder()
-                .name(request.getName())
-                .description(request.getDescription())
+                .name(SanitizerUtil.clean(request.getName()))
+                .description(SanitizerUtil.clean(request.getDescription()))
                 .ownerId(ownerId)
                 .build();
 
         store = storeRepository.save(store);
-        log.info("[createStore] ✅ store created: storeId={} name={}", store.getId(), store.getName());
+        log.info("[createStore]  store created: storeId={} name={}", store.getId(), store.getName());
         return toResponse(store);
     }
 
     @Override
     @Transactional
     public StoreResponse updateStore(StoreRequest request, UUID ownerId) {
-        log.info("[updateStore] 🚀 entry: ownerId={} name={}", ownerId, request.getName());
+        log.info("[updateStore]  entry: ownerId={} name={}", ownerId, request.getName());
 
         Store store = storeRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> {
-                    log.warn("[updateStore] ⚠️ store not found: ownerId={}", ownerId);
+                    log.warn("[updateStore]  store not found: ownerId={}", ownerId);
                     return new ResourceNotFoundException("Store not found");
                 });
 
         // cek uniqueness hanya kalau nama berubah
         if (!store.getName().equals(request.getName()) &&
                 storeRepository.existsByName(request.getName())) {
-            log.warn("[updateStore] ⚠️ store name already taken: name={}", request.getName());
+            log.warn("[updateStore]  store name already taken: name={}", request.getName());
             throw new BadRequestException("Store name already taken");
         }
 
-        store.setName(request.getName());
-        store.setDescription(request.getDescription());
+        store.setName(SanitizerUtil.clean(request.getName()));
+        store.setDescription(SanitizerUtil.clean(request.getDescription()));
         store = storeRepository.save(store);
 
-        log.info("[updateStore] ✅ store updated: storeId={} name={}", store.getId(), store.getName());
+        log.info("[updateStore]  store updated: storeId={} name={}", store.getId(), store.getName());
         return toResponse(store);
     }
 
     @Override
     @Transactional(readOnly = true)
     public StoreResponse getMyStore(UUID ownerId) {
-        log.info("[getMyStore] 🚀 entry: ownerId={}", ownerId);
+        log.info("[getMyStore]  entry: ownerId={}", ownerId);
         Store store = storeRepository.findByOwnerId(ownerId)
                 .orElseThrow(() -> {
-                    log.warn("[getMyStore] ⚠️ store not found: ownerId={}", ownerId);
+                    log.warn("[getMyStore]  store not found: ownerId={}", ownerId);
                     return new ResourceNotFoundException("Store not found");
                 });
-        log.info("[getMyStore] ✅ found: storeId={}", store.getId());
+        log.info("[getMyStore]  found: storeId={}", store.getId());
         return toResponse(store);
     }
 
     @Override
     public List<StoreResponse> getAllStores() {
-        log.info("[getAllStores] 🚀 entry");
+        log.info("[getAllStores]  entry");
         List<Store> stores = storeRepository.findAll();
-        log.info("[getAllStores] ✅ found {} stores", stores.size());
+        log.info("[getAllStores]  found {} stores", stores.size());
         return stores.stream().map(this::toResponse).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public StoreResponse getStoreById(UUID storeId) {
-        log.info("[getStoreById] 🚀 entry: storeId={}", storeId);
+        log.info("[getStoreById]  entry: storeId={}", storeId);
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> {
-                    log.warn("[getStoreById] ⚠️ store not found: storeId={}", storeId);
+                    log.warn("[getStoreById]  store not found: storeId={}", storeId);
                     return new ResourceNotFoundException("Store not found");
                 });
-        log.info("[getStoreById] ✅ found: storeId={}", store.getId());
+        log.info("[getStoreById]  found: storeId={}", store.getId());
         return toResponse(store);
     }
 

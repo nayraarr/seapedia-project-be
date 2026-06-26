@@ -21,17 +21,17 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProducts() {
-        log.info("[GET /api/products] 🚀 request received");
+        log.info("[GET /api/products]  request received");
         List<ProductResponse> data = productService.getAllProducts();
-        log.info("[GET /api/products] ✅ returning {} products", data.size());
+        log.info("[GET /api/products]  returning {} products", data.size());
         return ResponseEntity.ok(ApiResponse.success("Products fetched", data));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable UUID id) {
-        log.info("[GET /api/products/{}] 🚀 request received", id);
+        log.info("[GET /api/products/{}]  request received", id);
         ProductResponse data = productService.getProductById(id);
-        log.info("[GET /api/products/{}] ✅ returning product name={}", id, data.getName());
+        log.info("[GET /api/products/{}]  returning product name={}", id, data.getName());
         return ResponseEntity.ok(ApiResponse.success("Product fetched", data));
     }
 
