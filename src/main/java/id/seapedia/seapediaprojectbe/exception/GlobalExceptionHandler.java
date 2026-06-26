@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -22,9 +24,21 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(e -> e.getField() + ": " + e.getDefaultMessage())
                 .toList();
+        Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                        e -> e.getField(),
+                        e -> e.getDefaultMessage(),
+                        (a, b) -> a + "; " + b
+                ));
         String message = String.join("; ", errors);
         return ResponseEntity.badRequest()
-                .body(ApiResponse.error(message, errors));
+                .body(ApiResponse.<Void>builder()
+                        .success(false)
+                        .message(message)
+                        .errors(errors)
+                        .fieldErrors(fieldErrors)
+                        .build());
     }
 
     @ExceptionHandler(BadRequestException.class)
