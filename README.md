@@ -15,31 +15,20 @@
 ---
 
 ### Environment Variables
-#### .env file
-```dotenv
-JWT_SECRET=<ISI_SECRET_KAMU>
-JWT_EXPIRATION=900000
-APP_PORT=8080
-```
-| Variable            | Keterangan                                      | Contoh                        |
-|---------------------|-------------------------------------------------|-------------------------------|
-| `APP_PORT`          | Port server (default: `8080`)                   | `8080`                        |
-| `JWT_SECRET`        | Secret key JWT, Base64-encoded, min 256-bit     | `(base64 string)`             |
-| `JWT_EXPIRATION`    | Durasi token dalam milliseconds (default: 900000 = 15 menit) | `900000`   |
-| `DATABASE_URL`      | JDBC URL PostgreSQL                             | `jdbc:postgresql://...`       |
-| `DATABASE_USERNAME` | Username database                               | `postgres`                    |
-| `DATABASE_PASSWORD` | Password database                               | `secret`                      |
 
 #### .env.development / .env.production file
 ```dotenv
+APP_PORT=8080
 DATABASE_URL=<ISI_DENGAN_DATABASE_URL_KAMU>
 DATABASE_USERNAME=<ISI_USERNAME_DATABASE_KAMU>
 DATABASE_PASSWORD=<ISI_PASSWORD_DATABASE_KAMU>
 JWT_SECRET=<ISI_SECRET_KAMU>
 JWT_EXPIRATION=900000
+ALLOWED_ORIGINS=http://localhost:5173
 ```
 | Variable            | Keterangan                                      | Contoh                        |
 |---------------------|-------------------------------------------------|-------------------------------|
+| `APP_PORT`          | Port server (default: `8080`)                   | `8080`                        |
 | `DATABASE_URL`      | JDBC URL PostgreSQL                             | `jdbc:postgresql://...`       |
 | `DATABASE_USERNAME` | Username database                               | `postgres`                    |
 | `DATABASE_PASSWORD` | Password database                               | `secret`                      |
