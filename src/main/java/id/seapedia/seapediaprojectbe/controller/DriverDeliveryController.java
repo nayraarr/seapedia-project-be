@@ -58,7 +58,7 @@ public class DriverDeliveryController {
     public ResponseEntity<ApiResponse<DeliveryJobDetailResponse>> getJobDetail(
             @PathVariable UUID jobId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        DeliveryJobDetailResponse data = deliveryService.getJobDetail(jobId, userDetails.getUserId()); // <-- pass driverId
+        DeliveryJobDetailResponse data = deliveryService.getJobDetail(jobId, userDetails.getUserId());
         return ResponseEntity.ok(ApiResponse.success("Delivery job detail fetched", data));
     }
 
