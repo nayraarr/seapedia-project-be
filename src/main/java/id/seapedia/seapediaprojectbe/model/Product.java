@@ -36,6 +36,10 @@ public class Product {
     @Column(name = "image_url", length = 512)
     private String imageUrl;
 
+    @Column(name = "sold_count", nullable = false)
+    @Builder.Default
+    private Integer soldCount = 0;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

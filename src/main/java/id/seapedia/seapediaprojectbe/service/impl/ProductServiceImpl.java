@@ -111,6 +111,7 @@ public class ProductServiceImpl implements ProductService {
         res.setPrice(p.getPrice());
         res.setStock(p.getStock());
         res.setImageUrl(p.getImageUrl());
+        res.setSoldCount(p.getSoldCount());
         res.setStoreId(p.getStore().getId());
         res.setStoreName(p.getStore().getName());
         res.setCreatedAt(p.getCreatedAt());
