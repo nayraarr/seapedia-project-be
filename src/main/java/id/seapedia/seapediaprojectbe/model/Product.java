@@ -33,6 +33,9 @@ public class Product {
     @Column(nullable = false)
     private Integer stock;
 
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

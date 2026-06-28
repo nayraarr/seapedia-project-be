@@ -18,6 +18,7 @@ public class ProductResponse {
     private String description;
     private Long price;
     private Integer stock;
+    private String imageUrl;
     private UUID storeId;
     private String storeName;
     private LocalDateTime createdAt;

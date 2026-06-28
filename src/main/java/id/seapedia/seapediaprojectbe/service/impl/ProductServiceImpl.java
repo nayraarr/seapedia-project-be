@@ -66,6 +66,7 @@ public class ProductServiceImpl implements ProductService {
                 .description(SanitizerUtil.clean(request.getDescription()))
                 .price(request.getPrice())
                 .stock(request.getStock())
+                .imageUrl(request.getImageUrl())
                 .store(store)
                 .build();
         return toResponse(productRepository.save(product));
@@ -82,6 +83,7 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(SanitizerUtil.clean(request.getDescription()));
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
+        product.setImageUrl(request.getImageUrl());
         return toResponse(productRepository.save(product));
     }
 
@@ -108,6 +110,7 @@ public class ProductServiceImpl implements ProductService {
         res.setDescription(p.getDescription());
         res.setPrice(p.getPrice());
         res.setStock(p.getStock());
+        res.setImageUrl(p.getImageUrl());
         res.setStoreId(p.getStore().getId());
         res.setStoreName(p.getStore().getName());
         res.setCreatedAt(p.getCreatedAt());
