@@ -17,6 +17,7 @@ import java.util.UUID;
 public class CustomUserDetails implements UserDetails {
     private UUID userId;
     private String username;
+    private String fullName;
     private String password;
     private String activeRole;
     private Collection<? extends GrantedAuthority> authorities;
@@ -36,6 +37,7 @@ public class CustomUserDetails implements UserDetails {
         return new CustomUserDetails(
                 UUID.fromString(claims.getSubject()),
                 (String) claims.get("username"),
+                (String) claims.get("fullName"),
                 null,
                 activeRole,
                 authorities

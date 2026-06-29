@@ -1,10 +1,10 @@
-INSERT INTO users (id, username, email, password_hash, is_admin, created_at)
+INSERT INTO users (id, username, email, password_hash, is_admin, full_name, created_at)
 VALUES
-    ('11111111-1111-1111-1111-111111111111', 'admin',   'admin@example.com',       '$2b$10$gDdlF1zmMooNz4xd2L3vvubQ6IsLoHGa2BjCD7cy5gQq.eCT41cJK', true,  now()),
-    ('22222222-2222-2222-2222-222222222222', 'budi',    'budi@example.com',        '$2b$10$MmN3y3i7bCAV/MuxTe38IeI7CP3XZJC2jMmdTSf4dJzi1zmfmenEW', false, now()),
-    ('33333333-3333-3333-3333-333333333333', 'sari',    'sari@example.com',        '$2b$10$.jxpqRTBdpk452334FIREent6NyqYf3Hh.q4B6X8Y.y4fgysjgApW', false, now()),
-    ('44444444-4444-4444-4444-444444444444', 'dimas',   'dimas@example.com',       '$2b$10$33nQtPJNb.TgIuu1AffTf.VTZJzWbkYOKsRpmnuezkhFnVW4XhLN.', false, now()),
-    ('55555555-5555-5555-5555-555555555555', 'rina',    'rina@example.com',        '$2b$10$olT9B/glAOzWlr3ktkHmregNcQGo6bsRph5WzrIqlfl338QmQx86O', false, now())
+    ('11111111-1111-1111-1111-111111111111', 'admin',   'admin@example.com',       '$2b$10$gDdlF1zmMooNz4xd2L3vvubQ6IsLoHGa2BjCD7cy5gQq.eCT41cJK', true,  'Admin', now()),
+    ('22222222-2222-2222-2222-222222222222', 'budi',    'budi@example.com',        '$2b$10$MmN3y3i7bCAV/MuxTe38IeI7CP3XZJC2jMmdTSf4dJzi1zmfmenEW', false, 'Budi Prasetyo', now()),
+    ('33333333-3333-3333-3333-333333333333', 'sari',    'sari@example.com',        '$2b$10$.jxpqRTBdpk452334FIREent6NyqYf3Hh.q4B6X8Y.y4fgysjgApW', false, 'Sari Dewi', now()),
+    ('44444444-4444-4444-4444-444444444444', 'dimas',   'dimas@example.com',       '$2b$10$33nQtPJNb.TgIuu1AffTf.VTZJzWbkYOKsRpmnuezkhFnVW4XhLN.', false, 'Dimas Aditya', now()),
+    ('55555555-5555-5555-5555-555555555555', 'rina',    'rina@example.com',        '$2b$10$olT9B/glAOzWlr3ktkHmregNcQGo6bsRph5WzrIqlfl338QmQx86O', false, 'Rina Kusuma', now())
 ON CONFLICT DO NOTHING;
 
 INSERT INTO user_roles (id, user_id, role)

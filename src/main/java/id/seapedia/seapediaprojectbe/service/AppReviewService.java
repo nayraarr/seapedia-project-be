@@ -6,6 +6,6 @@ import id.seapedia.seapediaprojectbe.dto.review.ReviewResponse;
 import java.util.List;
 
 public interface AppReviewService {
-    ReviewResponse createReview(ReviewRequest request);
+    ReviewResponse createReview(ReviewRequest request, String reviewerName);
     List<ReviewResponse> getAllReviews();
 }

@@ -70,6 +70,7 @@ public class AuthServiceImpl implements AuthService {
             User user = User.builder()
                     .username(request.getUsername())
                     .email(request.getEmail())
+                    .fullName(request.getFullName())
                     .passwordHash(passwordEncoder.encode(request.getPassword()))
                     .isAdmin(false)
                     .build();
@@ -109,6 +110,7 @@ public class AuthServiceImpl implements AuthService {
             AuthResponse response = AuthResponse.builder()
                     .token(token)
                     .username(user.getUsername())
+                    .fullName(user.getFullName())
                     .roles(roles)
                     .activeRole(activeRole)
                     .requiresRoleSelection(activeRole == null)
@@ -174,6 +176,7 @@ public class AuthServiceImpl implements AuthService {
             AuthResponse response = AuthResponse.builder()
                     .token(token)
                     .username(user.getUsername())
+                    .fullName(user.getFullName())
                     .roles(roles)
                     .activeRole(activeRole)
                     .requiresRoleSelection(requiresRoleSelection)
@@ -219,6 +222,7 @@ public class AuthServiceImpl implements AuthService {
             AuthResponse response = AuthResponse.builder()
                     .token(token)
                     .username(user.getUsername())
+                    .fullName(user.getFullName())
                     .roles(roles)
                     .activeRole(request.getRole())
                     .requiresRoleSelection(false)
@@ -252,6 +256,7 @@ public class AuthServiceImpl implements AuthService {
             UserProfileResponse response = UserProfileResponse.builder()
                     .id(user.getId())
                     .username(user.getUsername())
+                    .fullName(user.getFullName())
                     .email(user.getEmail())
                     .isAdmin(user.getIsAdmin())
                     .roles(roles)
@@ -267,6 +272,34 @@ public class AuthServiceImpl implements AuthService {
             log.error("[getProfile]  unexpected error: message={}", e.getMessage());
             throw e;
         }
+    }
+
+    @Override
+    public UserProfileResponse updateProfile(UUID userId, UpdateProfileRequest request) {
+        log.info("[updateProfile] entry: userId={}", userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("[updateProfile] user not found: userId={}", userId);
+                    return new ResourceNotFoundException("User not found");
+                });
+        user.setFullName(request.getFullName());
+        user = userRepository.save(user);
+
+        List<String> roles = user.getRoles().stream()
+                .map(r -> r.getRole().name()).toList();
+
+        UserProfileResponse response = UserProfileResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .isAdmin(user.getIsAdmin())
+                .roles(roles)
+                .createdAt(user.getCreatedAt())
+                .build();
+
+        log.info("[updateProfile] exit: userId={} fullName={}", userId, request.getFullName());
+        return response;
     }
 
     @Override
@@ -355,6 +388,7 @@ public class AuthServiceImpl implements AuthService {
         return AuthResponse.builder()
                 .token(newToken)
                 .username(user.getUsername())
+                .fullName(user.getFullName())
                 .roles(roles)
                 .activeRole(activeRole)
                 .requiresRoleSelection(false)
