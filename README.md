@@ -10,9 +10,18 @@
 
 ---
 
-## Getting Started
+## Deployment
+
+| Platform | URL                                   |
+|----------|---------------------------------------|
+| Frontend | https://seapedia-project-fe.vercel.app |
+| Backend  | https://seapedia-project-be-production.up.railway.app |
+| API Documentation | https://ristek.link/SeapediaAPIDocCompfest18 |
 
 ---
+
+## Getting Started
+
 
 ### Environment Variables
 
@@ -31,50 +40,45 @@ ALLOWED_ORIGINS=http://localhost:5173
 | `APP_PORT`          | Port server (default: `8080`)                   | `8080`                        |
 | `DATABASE_URL`      | JDBC URL PostgreSQL                             | `jdbc:postgresql://...`       |
 | `DATABASE_USERNAME` | Username database                               | `postgres`                    |
-| `DATABASE_PASSWORD` | Password database                               | `secret`                      |
+| `DATABASE_PASSWORD` | Password database                               | `seapedia123`                 |
 | `JWT_SECRET`        | Secret key JWT, Base64-encoded, min 256-bit     | `(base64 string)`             |
 | `JWT_EXPIRATION`    | Durasi token dalam milliseconds (default: 900000 = 15 menit) | `900000`   |
 
 ### Menjalankan Server
 
-Aplikasi ini membutuhkan **environment variables** (khususnya konfigurasi database) agar bisa berjalan. Ada dua cara menjalankannya:
-Terminal tidak otomatis membaca file .env. Pastikan sudah memuat environment variables terlebih dahulu sebelum menjalankan perintah. Sebelum menjalankan perintah berikut, pastikan sudah ada .env.development di root project.
+Ada dua cara:
 
-#### Opsi 1: Menggunakan Terminal (Git Bash / WSL / Linux / Mac)
+#### A. Docker
+
+Pastikan Docker Desktop sudah terinstall dan berjalan. Repository backend (`seapedia-project-be`) dan frontend (`seapedia-project-fe`) harus ada di folder yang sama (sibling).
 
 ```bash
-#1. Muat semua variabel dari file .env.development
-set -a && source .env.development && set +a
+# Dari folder seapedia-project-be
+docker compose up --build
+```
 
-# 2. Jalankan aplikasi dengan profile dev
+Menjalankan 3 container: PostgreSQL (5432), Spring Boot (8080), Nginx frontend (3000). Seed data berjalan otomatis.
+
+Akses aplikasi di `http://localhost:3000`.
+
+#### B. Local Development (manual)
+
+Buat file `.env.development` (lihat `.env.example`), lalu:
+
+```bash
+# Git Bash / WSL / Linux / Mac
+set -a && source .env.development && set +a
 SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 ```
 
-#### Opsi 2: PowerShell (Windows)
-```bash
-
-# 1. Muat semua variabel dari file .env.development
+```powershell
+# PowerShell (Windows)
 Get-Content .env.development | Foreach-Object { if ($_ -match '^([^#=]+)=(.*)$') { Set-Item -Path "env:$($matches[1])" -Value $matches[2] } }
-
-# 2. Set profile dev
 $env:SPRING_PROFILES_ACTIVE="dev"
-
-# 3. Jalankan aplikasi
 .\gradlew.bat bootRun
 ```
 
-#### Opsi 3: Cmd (Windows)
-```bash
-
-# 1. Muat semua variabel dari file .env.development
-for /f "tokens=1* delims==" %a in (.env.development) do if not "%a"=="" set %a=%b
-
-# 2. Set profile dev
-set SPRING_PROFILES_ACTIVE=dev
-
-# 3. Jalankan aplikasi
-.\gradlew.bat bootRun
-```
+--- 
 
 ### Seed Data (Demo Accounts)
 
@@ -88,15 +92,17 @@ spring.jpa.defer-datasource-initialization=true
 
 Setiap INSERT memakai ON CONFLICT (id) DO NOTHING, sehingga aman dijalankan berulang kali.
 
-**Demo Accounts — Multi-Role**
+**Demo Accounts**
 
-| Username | Role                         | Password   | Saldo Wallet | Toko                    | Produk                                                        | Alamat           |
-|----------|------------------------------|------------|-------------|-------------------------|---------------------------------------------------------------|------------------|
-| `admin`  | Admin                        | `admin123` | Rp0         | —                       | —                                                             | —                |
-| `budi`   | **SELLER + BUYER**           | `budi123`  | Rp500.000   | Toko Segar Laut         | Salmon 500g, Udang Vannamei 1kg, Cumi-Cumi 500g              | Jl. Kenanga, Jaktim |
-| `sari`   | **BUYER + DRIVER**           | `sari123`  | Rp750.000   | —                       | —                                                             | Jl. Melati & Kantor, Bandung |
-| `dimas`  | **SELLER + DRIVER**          | `dimas123` | —           | Toko Elektronik         | Power Bank 10000mAh, Earphone Bluetooth, Kabel USB-C 2m       | —                |
-| `rina`   | **BUYER + SELLER + DRIVER**  | `rina123`  | Rp1.000.000 | Toko Fashion            | Topi Snapback, Tote Bag Kanvas, Scarf Polos                   | Jl. Anggrek, Surabaya |
+| Username | Role                         | Password   | Saldo Wallet | Toko                        | Produk                                                            | Alamat                  |
+|----------|------------------------------|------------|-------------|-----------------------------|-------------------------------------------------------------------|-------------------------|
+| `admin`  | Admin                        | `admin123` | Rp0         | —                           | —                                                                 | —                       |
+| `budi`   | **SELLER + BUYER**           | `budi123`  | Rp500.000   | Toko Segar Laut             | Salmon 500g, Udang Vannamei 1kg, Cumi-Cumi 500g                  | Jl. Kenanga, Jaktim     |
+| `sari`   | **BUYER + DRIVER + SELLER**  | `sari123`  | Rp750.000   | Toko Aneka Bumbu & Frozen   | Nugget Ayam 500g, Kentang Goreng 1kg, Sosis Sapi 500g            | Jl. Melati & Kantor, Bandung |
+| `dimas`  | **SELLER + DRIVER + BUYER**  | `dimas123` | Rp250.000   | Toko Elektronik             | Power Bank 10000mAh, Earphone Bluetooth, Kabel USB-C 2m          | —                       |
+| `rina`   | **BUYER + SELLER + DRIVER**  | `rina123`  | Rp1.000.000 | Toko Fashion                | Topi Snapback, Tote Bag Kanvas, Scarf Polos                       | Jl. Anggrek, Surabaya   |
+| `arya`   | **SELLER + BUYER**           | `arya123`  | Rp300.000   | Aria Fashion                | Jam Tangan Pria, Kacamata Hitam                                   | Jl. Flamboyan, Semarang |
+| `sinta`  | **SELLER + BUYER**           | `sinta123` | Rp450.000   | Sinta Elektronik            | Mouse Wireless, Keyboard Mekanik, Speaker Bluetooth               | Jl. Mawar, Yogyakarta   |
 
 > Login menggunakan endpoint `POST /api/auth/login`. Jika user memiliki lebih dari satu role, sistem akan mengarahkan ke halaman **select-role** untuk memilih role aktif.
 >
@@ -109,8 +115,6 @@ Setiap INSERT memakai ON CONFLICT (id) DO NOTHING, sehingga aman dijalankan beru
 ---
 
 ## Admin Setup
-
----
 
 Admin adalah user dengan atribut **isAdmin = true** pada tabel users. Admin tidak memiliki role BUYER, SELLER, atau DRIVER.
 
@@ -129,7 +133,6 @@ Setelah user admin dibuat, login menggunakan endpoint `POST /api/auth/login` den
 
 ## Business Rules
 
----
 
 ### 1. Single-Store Checkout
 
@@ -142,7 +145,6 @@ Enforcement pada codebase ini berlapis dua:
 
 Untuk membeli dari toko berbeda, user harus mengosongkan cart terlebih dahulu (baik dengan menghapus item cart ataupun dengan checkout.
 
----
 
 ### 2. Discount dan PPN
 
@@ -164,7 +166,6 @@ totalAmount     = taxBase + deliveryFee + taxAmount
 - Diskon tipe PERCENTAGE memiliki field maxDiscountAmount sebagai batas atas potongan.
 - Diskon tidak bisa membuat taxBase negatif (discountAmount dibatasi maksimal sebesar subtotal).
 
----
 
 ### 3. Driver Earning
 
@@ -182,7 +183,6 @@ Saat driver menyelesaikan job (completeJob), sistem otomatis:
 
 Tidak ada pembagian fee antara platform seapedia dan mitra aplikasi. Semua delivery fee masuk ke driver, semua totalAmount masuk ke seller.
 
----
 
 ### 4. Overdue SLA dan Auto Return
 
@@ -224,7 +224,6 @@ POST /api/admin/simulate/advance?minutes=121
 
 ## Security
 
---- 
 
 ### SQL Injection
 
@@ -289,8 +288,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 
 ## API Endpoints
 
----
-
 ### Auth
 | Method | Path                      | Akses  | Deskripsi                              |
 |--------|---------------------------|--------|----------------------------------------|
@@ -300,22 +297,20 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | POST   | `/api/auth/logout`        | Auth   | Logout, blacklist token                |
 | POST   | `/api/auth/refresh`       | Public* | Silent refresh token                   |
 | GET    | `/api/auth/me`            | Auth   | Profil user aktif                      |
+| PATCH  | `/api/auth/me`            | Auth   | Update profil (fullName)               |
+| GET    | `/api/auth/me/summary`    | Auth   | Ringkasan keuangan user aktif          |
 
 > *Refresh tetap membutuhkan token valid di header Authorization — token lama digunakan untuk validasi dan penerbitan token baru.
 
-
-| GET    | `/api/auth/me/summary`    | Auth   | Ringkasan keuangan user aktif          |
-
----
 
 ### Products (Public)
 | Method | Path                          | Akses  | Deskripsi                        |
 |--------|-------------------------------|--------|----------------------------------|
 | GET    | `/api/products`               | Public | Daftar semua produk              |
 | GET    | `/api/products/{id}`          | Public | Detail produk                    |
+| GET    | `/api/products/{id}/similar`  | Public | Produk serupa (kategori sama)    |
 | GET    | `/api/products/store/{storeId}` | Public | Produk berdasarkan toko        |
 
----
 
 ### Stores (Public & Seller)
 | Method | Path                  | Akses  | Deskripsi                        |
@@ -326,7 +321,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | PUT    | `/api/seller/store`   | SELLER | Update toko milik seller aktif   |
 | GET    | `/api/seller/store`   | SELLER | Lihat toko milik seller aktif    |
 
----
 
 ### Seller Products
 | Method | Path                          | Akses  | Deskripsi                        |
@@ -336,7 +330,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | PUT    | `/api/seller/products/{id}`   | SELLER | Update produk                    |
 | DELETE | `/api/seller/products/{id}`   | SELLER | Hapus produk                     |
 
----
 
 ### Seller Orders
 | Method | Path                                    | Akses  | Deskripsi                          |
@@ -346,7 +339,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | PATCH  | `/api/seller/orders/{orderId}/process`  | SELLER | Proses order (siap kirim)          |
 | GET    | `/api/seller/orders/report`             | SELLER | Laporan pendapatan seller          |
 
----
 
 ### Buyer — Cart
 | Method | Path                                  | Akses | Deskripsi                          |
@@ -357,7 +349,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | DELETE | `/api/buyer/cart/items/{cartItemId}`  | BUYER | Hapus satu item dari cart          |
 | DELETE | `/api/buyer/cart`                     | BUYER | Kosongkan seluruh cart             |
 
----
 
 ### Buyer Checkout & Orders
 | Method | Path                                | Akses | Deskripsi                              |
@@ -369,7 +360,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | GET    | `/api/buyer/orders/{orderId}`       | BUYER | Detail order                           |
 | GET    | `/api/buyer/orders/report`          | BUYER | Laporan pengeluaran buyer              |
 
----
 
 ### Buyer Wallet
 | Method | Path                              | Akses | Deskripsi                        |
@@ -378,7 +368,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | POST   | `/api/buyer/wallet/topup`         | BUYER | Top up saldo wallet              |
 | GET    | `/api/buyer/wallet/transactions`  | BUYER | Riwayat transaksi wallet         |
 
----
 
 ### Buyer Addresses
 | Method | Path                                  | Akses | Deskripsi                        |
@@ -389,7 +378,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | DELETE | `/api/buyer/addresses/{id}`           | BUYER | Hapus alamat                     |
 | PATCH  | `/api/buyer/addresses/{id}/default`   | BUYER | Set alamat sebagai default       |
 
----
 
 ### Driver Jobs
 | Method | Path                              | Akses  | Deskripsi                              |
@@ -402,7 +390,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | PATCH  | `/api/driver/jobs/{jobId}/take`   | DRIVER | Ambil job                              |
 | PATCH  | `/api/driver/jobs/{jobId}/complete` | DRIVER | Selesaikan job                       |
 
----
 
 ### Discounts (Public)
 | Method | Path                          | Akses  | Deskripsi              |
@@ -412,7 +399,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | GET    | `/api/discounts/promos`       | Public | Daftar semua promo     |
 | GET    | `/api/discounts/promos/{id}`  | Public | Detail promo           |
 
----
 
 ### Reviews (Public & Auth)
 | Method | Path            | Akses | Deskripsi                |
@@ -420,7 +406,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | GET    | `/api/reviews`  | Public | Daftar review app       |
 | POST   | `/api/reviews`  | Auth   | Kirim review app        |
 
----
 
 ### Admin Monitoring
 | Method | Path                                    | Akses | Deskripsi                              |
@@ -433,7 +418,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | GET    | `/api/admin/users/{userId}/financial-summary` | ADMIN | Ringkasan keuangan user tertentu |
 | GET    | `/api/admin/delivery-jobs`              | ADMIN | Daftar semua delivery job              |
 
----
 
 ### Admin Overdue
 | Method | Path                                  | Akses | Deskripsi                              |
@@ -441,7 +425,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | POST   | `/api/admin/overdue/process`          | ADMIN | Trigger proses semua order overdue     |
 | POST   | `/api/admin/overdue/process/{orderId}` | ADMIN | Trigger proses satu order overdue     |
 
----
 
 ### Admin Simulasi Waktu
 | Method | Path                              | Akses | Deskripsi                              |
@@ -450,7 +433,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 | POST   | `/api/admin/simulate/reset`       | ADMIN | Reset offset waktu ke 0               |
 | GET    | `/api/admin/simulate/status`      | ADMIN | Lihat waktu simulasi saat ini         |
 
----
 
 ### Admin Discount Management
 | Method | Path                      | Akses | Deskripsi          |
@@ -464,7 +446,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 
 ## Testing Guide
 
----
 
 ### Persiapan (lengkapnya untuk frontend ada di README frontend)
 
@@ -472,7 +453,6 @@ Role diambil dari field `activeRole` di JWT, bukan semua role yang dimiliki user
 2. Pastikan database PostgreSQL sudah berjalan dan environment variables sudah dikonfigurasi.
 3. Pastikan user admin sudah ada di database (lihat bagian Admin Setup di README backend).
 
----
 
 ### Skenario 0: Guest bisa melihat katalog & review aplikasi
 Step di bawah ini dilakukan tanpa login atau register terlebih dahulu:
@@ -483,7 +463,6 @@ Step di bawah ini dilakukan tanpa login atau register terlebih dahulu:
 4. Refresh halaman lalu review yang baru disubmit tampil di antarmuka.
 5. Coba submit review dengan komentar berisi tag HTML/script, contoh: `<script>alert(1)</script>` atau `<b>test</b>`. Frontend menampilkan sebagai text biasa dan tidak dieksekusi sebagai HTML.
 
----
 
 ### Skenario 1: Registrasi dan login multi-Role
 
@@ -492,7 +471,6 @@ Step di bawah ini dilakukan tanpa login atau register terlebih dahulu:
 3. Pilih role SELLER lalu token baru diberikan dengan `activeRole: SELLER`.
 4. Coba akses `/dashboard/buyer` secara manual di URL bar. Platform akan redirect ke `/dashboard/seller` (bukan error).
 
----
 
 ### Skenario 2: Seller bisa melakukan setup toko dan produk
 
@@ -503,13 +481,12 @@ Step di bawah ini dilakukan tanpa login atau register terlebih dahulu:
 5. Buka `/products` (sebagai guest/buyer). Kedua produk yang baru dibuat muncul di katalog publik.
 6. Coba update/edit salah satu produk (ubah harga/stok) dan hapus produk lainnya. Perubahan ini tercermin di katalog publik.
 
----
 
 ### Skenario 3: Buyer melakukan top up, kelola address, dan checkout single-store
 
 1. Login sebagai Buyer (akun berbeda dari Seller).
 2. Buka Wallet, lakukan top-up sehingga saldo bertambah, transaksi tercatat di riwayat wallet.
-3. Dari dashboar, buka alamat pengiriman, tambahkan alamat baru dan set sebagai default.
+3. Dari dashboard, buka alamat pengiriman, tambahkan alamat baru dan set sebagai default.
 4. Buka halaman produk, tambahkan produk dari dari suatu toko ke cart.
 5. Coba tambahkan produk dari toko lain maka muncul banner konflik di halaman cart, tombol checkout nonaktif.
 6. Kosongkan cart, tambah produk dari satu toko saja.
@@ -518,7 +495,6 @@ Step di bawah ini dilakukan tanpa login atau register terlebih dahulu:
 9. Preview checkout menampilkan subtotal, discountAmount, delivery fee, PPN 12%, dan totalAmount secara terpisah.
 10. Konfirmasi checkout lalu order terbuat dengan status awal Sedang Dikemas. Cek stok produk berkurang dan saldo wallet berkurang.
 
----
 
 ### Skenario 4: Seller melakukan proses order
 
@@ -526,7 +502,6 @@ Step di bawah ini dilakukan tanpa login atau register terlebih dahulu:
 2. Buka Order Masuk, lalu order dari buyer muncul dengan status Sedang Dikemas.
 3. Klik Proses maka status berubah menjadi Menunggu Pengirim, job pengiriman tersedia untuk driver.
 
----
 
 ### Skenario 5: Driver bisa mencari, mengambil dan menyelesaikan Job
 
@@ -537,7 +512,6 @@ Step di bawah ini dilakukan tanpa login atau register terlebih dahulu:
 5. Klik Selesaikan (Konfirmasi Job Selesai) maka status order berubah menjadi `SELESAI`, wallet driver dan seller dikreditkan.
 6. Buka Riwayat & Penghasilan maka job yang baru selesai dan earning-nya tercatat.
 
----
 
 ### Skenario 6: Buyer bisa melihat riwayat dan status order
 
@@ -545,7 +519,6 @@ Step di bawah ini dilakukan tanpa login atau register terlebih dahulu:
 2. Buka Riwayat Pesanan  maka order yang sudah dibuat tampil dengan status terkini (SELESAI, sesuai dengan Skenario 5).
 3. Klik salah satu order, buka detailnya, maka menampilkan timeline status* (Sedang Dikemas → Menunggu Pengirim → Sedang Dikirim → Selesai) lengkap dengan timestamp tiap perubahan.
 
----
 
 ### Skenario 7: Admin dapat memonitoring, melakukan discount management, dan simulasi overdue
 
@@ -560,4 +533,3 @@ Step di bawah ini dilakukan tanpa login atau register terlebih dahulu:
         - REGULAR: minimal 10.081 menit
     - Trigger Proses Overdue (atau tunggu scheduler otomatis tiap 30 menit).
     - Cek order sebagai Buyer. Maka statusnya berubah menjadi `DIKEMBALIKAN`, saldo wallet buyer kembali ke nilai sebelum checkout, dan stok produk terkait auto-return.
----
