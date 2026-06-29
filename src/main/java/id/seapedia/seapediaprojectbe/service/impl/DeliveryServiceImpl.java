@@ -81,6 +81,11 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
 
         Order order = job.getOrder();
+        if (!order.getStatus().canTransitionTo(OrderStatus.SEDANG_DIKIRIM)) {
+            throw new BadRequestException(
+                    "Job tidak bisa diambil dari status " + order.getStatus().getLabel());
+        }
+
         order.setStatus(OrderStatus.SEDANG_DIKIRIM);
         orderRepository.save(order);
 
@@ -240,6 +245,11 @@ public class DeliveryServiceImpl implements DeliveryService {
                         "Active delivery job not found or not owned by this driver"));
 
         Order order = job.getOrder();
+        if (!order.getStatus().canTransitionTo(OrderStatus.SELESAI)) {
+            throw new BadRequestException(
+                    "Pesanan tidak bisa diselesaikan dari status " + order.getStatus().getLabel());
+        }
+
         order.setStatus(OrderStatus.SELESAI);
         orderRepository.save(order);
 

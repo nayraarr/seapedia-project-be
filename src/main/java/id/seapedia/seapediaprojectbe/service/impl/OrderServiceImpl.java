@@ -427,7 +427,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = getOrderForSeller(sellerId, orderId);
 
-        if (order.getStatus() != OrderStatus.SEDANG_DIKEMAS) {
+        if (!order.getStatus().canTransitionTo(OrderStatus.MENUNGGU_PENGIRIM)) {
             throw new BadRequestException(
                     "Order tidak bisa diproses dari status " + order.getStatus().getLabel());
         }
