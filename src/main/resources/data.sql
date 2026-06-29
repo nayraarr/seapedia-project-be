@@ -4,7 +4,9 @@ VALUES
     ('22222222-2222-2222-2222-222222222222', 'budi',    'budi@example.com',        '$2b$10$MmN3y3i7bCAV/MuxTe38IeI7CP3XZJC2jMmdTSf4dJzi1zmfmenEW', false, 'Budi Prasetyo', now()),
     ('33333333-3333-3333-3333-333333333333', 'sari',    'sari@example.com',        '$2b$10$.jxpqRTBdpk452334FIREent6NyqYf3Hh.q4B6X8Y.y4fgysjgApW', false, 'Sari Dewi', now()),
     ('44444444-4444-4444-4444-444444444444', 'dimas',   'dimas@example.com',       '$2b$10$33nQtPJNb.TgIuu1AffTf.VTZJzWbkYOKsRpmnuezkhFnVW4XhLN.', false, 'Dimas Aditya', now()),
-    ('55555555-5555-5555-5555-555555555555', 'rina',    'rina@example.com',        '$2b$10$olT9B/glAOzWlr3ktkHmregNcQGo6bsRph5WzrIqlfl338QmQx86O', false, 'Rina Kusuma', now())
+    ('55555555-5555-5555-5555-555555555555', 'rina',    'rina@example.com',        '$2b$10$olT9B/glAOzWlr3ktkHmregNcQGo6bsRph5WzrIqlfl338QmQx86O', false, 'Rina Kusuma', now()),
+    ('6618c4cf-1357-4b09-9b33-9d6a3f73e110', 'arya',    'arya@example.com',        '$2b$10$MmN3y3i7bCAV/MuxTe38IeI7CP3XZJC2jMmdTSf4dJzi1zmfmenEW', false, 'Aria Pratama', now()),
+    ('6618c4cf-1357-4b09-9b33-9d6a3f73e111', 'sinta',   'sinta@example.com',       '$2b$10$MmN3y3i7bCAV/MuxTe38IeI7CP3XZJC2jMmdTSf4dJzi1zmfmenEW', false, 'Sinta Cahyani', now())
 ON CONFLICT DO NOTHING;
 
 INSERT INTO user_roles (id, user_id, role)
@@ -17,7 +19,12 @@ VALUES
     ('a0000003-aaaa-aaaa-aaaa-aaaaaaaaaaa2', '44444444-4444-4444-4444-444444444444', 'DRIVER'),
     ('a0000004-aaaa-aaaa-aaaa-aaaaaaaaaaa1', '55555555-5555-5555-5555-555555555555', 'BUYER'),
     ('a0000004-aaaa-aaaa-aaaa-aaaaaaaaaaa2', '55555555-5555-5555-5555-555555555555', 'SELLER'),
-    ('a0000004-aaaa-aaaa-aaaa-aaaaaaaaaaa3', '55555555-5555-5555-5555-555555555555', 'DRIVER')
+    ('a0000004-aaaa-aaaa-aaaa-aaaaaaaaaaa3', '55555555-5555-5555-5555-555555555555', 'DRIVER'),
+    ('a0000002-aaaa-aaaa-aaaa-aaaaaaaaaaa3', '33333333-3333-3333-3333-333333333333', 'SELLER'),
+    ('a0000005-aaaa-aaaa-aaaa-aaaaaaaaaaa1', '6618c4cf-1357-4b09-9b33-9d6a3f73e110', 'SELLER'),
+    ('a0000005-aaaa-aaaa-aaaa-aaaaaaaaaaa2', '6618c4cf-1357-4b09-9b33-9d6a3f73e110', 'BUYER'),
+    ('a0000006-aaaa-aaaa-aaaa-aaaaaaaaaaa1', '6618c4cf-1357-4b09-9b33-9d6a3f73e111', 'SELLER'),
+    ('a0000006-aaaa-aaaa-aaaa-aaaaaaaaaaa2', '6618c4cf-1357-4b09-9b33-9d6a3f73e111', 'BUYER')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO wallets (id, user_id, balance, created_at, updated_at)
@@ -25,7 +32,10 @@ VALUES
     ('b0000000-bbbb-bbbb-bbbb-bbbbbbbbb001', '11111111-1111-1111-1111-111111111111', 0,       now(), now()),
     ('b0000000-bbbb-bbbb-bbbb-bbbbbbbbb002', '22222222-2222-2222-2222-222222222222', 500000,  now(), now()),
     ('b0000000-bbbb-bbbb-bbbb-bbbbbbbbb003', '33333333-3333-3333-3333-333333333333', 750000,  now(), now()),
-    ('b0000000-bbbb-bbbb-bbbb-bbbbbbbbb005', '55555555-5555-5555-5555-555555555555', 1000000, now(), now())
+    ('b0000000-bbbb-bbbb-bbbb-bbbbbbbbb005', '55555555-5555-5555-5555-555555555555', 1000000, now(), now()),
+    ('b0000000-bbbb-bbbb-bbbb-bbbbbbbbb004', '44444444-4444-4444-4444-444444444444', 250000, now(), now()),
+    ('b0000000-bbbb-bbbb-bbbb-bbbbbbbbb006', '6618c4cf-1357-4b09-9b33-9d6a3f73e110', 300000, now(), now()),
+    ('b0000000-bbbb-bbbb-bbbb-bbbbbbbbb007', '6618c4cf-1357-4b09-9b33-9d6a3f73e111', 450000, now(), now())
 ON CONFLICT DO NOTHING;
 
 INSERT INTO stores (id, name, description, owner_id, created_at, updated_at)
@@ -38,7 +48,16 @@ VALUES
      '44444444-4444-4444-4444-444444444444', now(), now()),
     ('c0000000-cccc-cccc-cccc-cccccccccc03', 'Toko Fashion',
      'Aksesoris dan pakaian stylish untuk pria & wanita, kekinian dan nyaman.',
-     '55555555-5555-5555-5555-555555555555', now(), now())
+     '55555555-5555-5555-5555-555555555555', now(), now()),
+    ('c0000000-cccc-cccc-cccc-cccccccccc04', 'Toko Aneka Bumbu & Frozen',
+     'Bumbu dapur instan dan makanan frozen berkualitas, siap masak kapan saja.',
+     '33333333-3333-3333-3333-333333333333', now(), now()),
+    ('c0000000-cccc-cccc-cccc-cccccccccc05', 'Sinta Elektronik',
+     'Aneka aksesoris gadget dan charger original dengan harga miring.',
+     '6618c4cf-1357-4b09-9b33-9d6a3f73e111', now(), now()),
+    ('c0000000-cccc-cccc-cccc-cccccccccc06', 'Aria Fashion',
+     'Fashion pria & wanita kekinian, dari gelang hingga kacamata hitam.',
+     '6618c4cf-1357-4b09-9b33-9d6a3f73e110', now(), now())
 ON CONFLICT DO NOTHING;
 
 INSERT INTO products (id, name, description, price, stock, sold_count, image_url, category, store_id, created_at, updated_at)
@@ -87,6 +106,42 @@ VALUES
      'Scarf polos bahan ceruti lembut, tidak gerah. Tersedia 5 warna.', 28000, 90, 64,
      'https://res.cloudinary.com/dhpxtqzt5/image/upload/scarf_polos.png', 'FASHION',
      'c0000000-cccc-cccc-cccc-cccccccccc03', now(), now())
+ON CONFLICT DO NOTHING;
+
+INSERT INTO products (id, name, description, price, stock, sold_count, image_url, category, store_id, created_at, updated_at)
+VALUES
+    ('d0000000-dddd-dddd-dddd-dddddddddd10', 'Bumbu Rendang Instan 200g',
+     'Bumbu rendang instan asli Padang, tinggal tambah daging. Praktis & lezat.', 18000, 70, 45,
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/bumbu_rendang_1.jpg', 'MAKANAN',
+     'c0000000-cccc-cccc-cccc-cccccccccc04', now(), now()),
+    ('d0000000-dddd-dddd-dddd-dddddddddd11', 'Kerupuk Udang 500g',
+     'Kerupuk udang original, renyah, cocok teman makan sehari-hari.', 22000, 100, 38,
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/kerupuk_udang_1.jpg', 'MAKANAN',
+     'c0000000-cccc-cccc-cccc-cccccccccc04', now(), now())
+ON CONFLICT DO NOTHING;
+
+INSERT INTO products (id, name, description, price, stock, sold_count, image_url, category, store_id, created_at, updated_at)
+VALUES
+    ('d0000000-dddd-dddd-dddd-dddddddddd12', 'Charger 20W Fast Charging',
+     'Charger dinding 20W PD fast charging, kompatibel iPhone & Android.', 45000, 50, 29,
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/charger_20w_1.jpg', 'ELEKTRONIK',
+     'c0000000-cccc-cccc-cccc-cccccccccc05', now(), now()),
+    ('d0000000-dddd-dddd-dddd-dddddddddd13', 'Mouse Wireless Silent',
+     'Mouse wireless silent click, baterai tahan 6 bulan, plug & play.', 65000, 35, 18,
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/mouse_wireless_1.jpg', 'ELEKTRONIK',
+     'c0000000-cccc-cccc-cccc-cccccccccc05', now(), now())
+ON CONFLICT DO NOTHING;
+
+INSERT INTO products (id, name, description, price, stock, sold_count, image_url, category, store_id, created_at, updated_at)
+VALUES
+    ('d0000000-dddd-dddd-dddd-dddddddddd14', 'Gelang Tangan Kulit',
+     'Gelang tangan kulit sintetis, adjustable, cocok gaya casual & formal.', 25000, 55, 22,
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/gelang_kulit_1.jpg', 'FASHION',
+     'c0000000-cccc-cccc-cccc-cccccccccc06', now(), now()),
+    ('d0000000-dddd-dddd-dddd-dddddddddd15', 'Kacamata Hitam Aviator',
+     'Kacamata hitam model aviator, UV400, ringan, pria & wanita cocok.', 55000, 40, 31,
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/kacamata_aviator_1.jpg', 'FASHION',
+     'c0000000-cccc-cccc-cccc-cccccccccc06', now(), now())
 ON CONFLICT DO NOTHING;
 
 INSERT INTO addresses (id, user_id, label, recipient_name, phone, full_address, city, postal_code, is_default, created_at, updated_at)
