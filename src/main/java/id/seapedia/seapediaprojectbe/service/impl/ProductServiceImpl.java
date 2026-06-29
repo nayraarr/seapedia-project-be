@@ -5,6 +5,7 @@ import id.seapedia.seapediaprojectbe.dto.product.ProductResponse;
 import id.seapedia.seapediaprojectbe.exception.BadRequestException;
 import id.seapedia.seapediaprojectbe.exception.ResourceNotFoundException;
 import id.seapedia.seapediaprojectbe.model.Product;
+import id.seapedia.seapediaprojectbe.model.ProductCategory;
 import id.seapedia.seapediaprojectbe.model.Store;
 import id.seapedia.seapediaprojectbe.repository.ProductRepository;
 import id.seapedia.seapediaprojectbe.repository.StoreRepository;
@@ -61,12 +62,14 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse createProduct(UUID sellerId, ProductRequest request) {
         Store store = storeRepository.findByOwnerId(sellerId)
                 .orElseThrow(() -> new BadRequestException("Kamu belum punya toko"));
+        ProductCategory category = request.getCategory() != null ? request.getCategory() : ProductCategory.LAINNYA;
         Product product = Product.builder()
                 .name(SanitizerUtil.clean(request.getName()))
                 .description(SanitizerUtil.clean(request.getDescription()))
                 .price(request.getPrice())
                 .stock(request.getStock())
                 .imageUrl(request.getImageUrl())
+                .category(category)
                 .store(store)
                 .build();
         return toResponse(productRepository.save(product));
@@ -84,6 +87,9 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
         product.setImageUrl(request.getImageUrl());
+        if (request.getCategory() != null) {
+            product.setCategory(request.getCategory());
+        }
         return toResponse(productRepository.save(product));
     }
 
@@ -98,9 +104,28 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<ProductResponse> getProductsByCategory(ProductCategory category) {
+        return productRepository.findByCategory(category)
+                .stream().map(this::toResponse).toList();
+    }
+
+    @Override
     public List<ProductResponse> getProductsByStore(UUID storeId) {
         return productRepository.findByStoreId(storeId)
                 .stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    public List<ProductResponse> getSimilarProducts(UUID productId, int limit) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        List<Product> similar = productRepository.findByCategoryAndIdNot(product.getCategory(), productId);
+        return similar.stream()
+                .sorted((a, b) -> (b.getSoldCount() != null ? b.getSoldCount() : 0)
+                        - (a.getSoldCount() != null ? a.getSoldCount() : 0))
+                .limit(limit)
+                .map(this::toResponse)
+                .toList();
     }
 
     private ProductResponse toResponse(Product p) {
@@ -112,6 +137,7 @@ public class ProductServiceImpl implements ProductService {
         res.setStock(p.getStock());
         res.setImageUrl(p.getImageUrl());
         res.setSoldCount(p.getSoldCount());
+        res.setCategory(p.getCategory());
         res.setStoreId(p.getStore().getId());
         res.setStoreName(p.getStore().getName());
         res.setCreatedAt(p.getCreatedAt());

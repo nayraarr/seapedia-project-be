@@ -1,5 +1,6 @@
 package id.seapedia.seapediaprojectbe.dto.product;
 
+import id.seapedia.seapediaprojectbe.model.ProductCategory;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -28,4 +29,7 @@ public class ProductRequest {
 
     @Size(max = 512, message = "Image URL max 512 characters")
     private String imageUrl;
+
+    @NotNull(message = "Category is required")
+    private ProductCategory category;
 }

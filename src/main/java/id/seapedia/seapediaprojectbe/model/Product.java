@@ -40,6 +40,11 @@ public class Product {
     @Builder.Default
     private Integer soldCount = 0;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private ProductCategory category = ProductCategory.LAINNYA;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

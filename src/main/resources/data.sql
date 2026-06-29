@@ -41,51 +41,51 @@ VALUES
      '55555555-5555-5555-5555-555555555555', now(), now())
 ON CONFLICT DO NOTHING;
 
-INSERT INTO products (id, name, description, price, stock, sold_count, image_url, store_id, created_at, updated_at)
+INSERT INTO products (id, name, description, price, stock, sold_count, image_url, category, store_id, created_at, updated_at)
 VALUES
     ('d0000000-dddd-dddd-dddd-dddddddddd01', 'Ikan Salmon Segar 500g',
      'Ikan salmon segar impor, kaya omega-3. Porsi 500 gram, siap masak.', 95000, 30, 15,
-     'https://res.cloudinary.com/dhpxtqzt5/image/upload/ikan_salmon_1.jpg',
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/ikan_salmon_1.jpg', 'MAKANAN',
      'c0000000-cccc-cccc-cccc-cccccccccc01', now(), now()),
     ('d0000000-dddd-dddd-dddd-dddddddddd02', 'Udang Vannamei 1kg',
      'Udang vannamei ukuran besar, bersih, tanpa kulit. Cocok untuk bakar & goreng.', 75000, 50, 27,
-     'https://res.cloudinary.com/dhpxtqzt5/image/upload/udang_vaname_1.jpg',
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/udang_vaname_1.jpg', 'MAKANAN',
      'c0000000-cccc-cccc-cccc-cccccccccc01', now(), now()),
     ('d0000000-dddd-dddd-dddd-dddddddddd03', 'Cumi-Cumi Segar 500g',
      'Cumi-cumi segar, ukuran sedang, sudah dibersihkan. Nyaman diolah jadi berbagai masakan.', 55000, 40, 12,
-     'https://res.cloudinary.com/dhpxtqzt5/image/upload/cumi_cumi_segar_1.jpg',
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/cumi_cumi_segar_1.jpg', 'MAKANAN',
      'c0000000-cccc-cccc-cccc-cccccccccc01', now(), now())
 ON CONFLICT DO NOTHING;
 
-INSERT INTO products (id, name, description, price, stock, sold_count, image_url, store_id, created_at, updated_at)
+INSERT INTO products (id, name, description, price, stock, sold_count, image_url, category, store_id, created_at, updated_at)
 VALUES
     ('d0000000-dddd-dddd-dddd-dddddddddd04', 'Power Bank 10000mAh',
      'Power bank kapasitas 10000mAh, dual port, fast charging. Bawa gadget tetap nyala.', 120000, 25, 8,
-     'https://res.cloudinary.com/dhpxtqzt5/image/upload/power_bank_1.jpg',
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/power_bank_1.jpg', 'ELEKTRONIK',
      'c0000000-cccc-cccc-cccc-cccccccccc02', now(), now()),
     ('d0000000-dddd-dddd-dddd-dddddddddd05', 'Earphone Bluetooth',
      'Earphone wireless Bluetooth 5.3, bass jernih, tahan 8 jam pemakaian.', 85000, 40, 42,
-     'https://res.cloudinary.com/dhpxtqzt5/image/upload/earphone_bluetooth_1.jpg',
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/earphone_bluetooth_1.jpg', 'ELEKTRONIK',
      'c0000000-cccc-cccc-cccc-cccccccccc02', now(), now()),
     ('d0000000-dddd-dddd-dddd-dddddddddd06', 'Kabel USB-C 2m',
      'Kabel USB-C ke USB-A panjang 2 meter, fast charging & data sync, woven braided.', 25000, 100, 75,
-     'https://res.cloudinary.com/dhpxtqzt5/image/upload/kabel_usb_c.jpg',
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/kabel_usb_c.jpg', 'ELEKTRONIK',
      'c0000000-cccc-cccc-cccc-cccccccccc02', now(), now())
 ON CONFLICT DO NOTHING;
 
-INSERT INTO products (id, name, description, price, stock, sold_count, image_url, store_id, created_at, updated_at)
+INSERT INTO products (id, name, description, price, stock, sold_count, image_url, category, store_id, created_at, updated_at)
 VALUES
     ('d0000000-dddd-dddd-dddd-dddddddddd07', 'Topi Snapback',
      'Topi snapback casual, adjustable, bahan katun premium. Cocok sehari-hari.', 45000, 60, 33,
-     'https://res.cloudinary.com/dhpxtqzt5/image/upload/topi_snapback.jpg',
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/topi_snapback.jpg', 'FASHION',
      'c0000000-cccc-cccc-cccc-cccccccccc03', now(), now()),
     ('d0000000-dddd-dddd-dddd-dddddddddd08', 'Tote Bag Kanvas Besar',
      'Tote bag kanvas tebal, kapasitas besar, bisa dilipat. Cocok belanja & kuliah.', 35000, 80, 91,
-     'https://res.cloudinary.com/dhpxtqzt5/image/upload/totebag_canvas_1.jpg',
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/totebag_canvas_1.jpg', 'FASHION',
      'c0000000-cccc-cccc-cccc-cccccccccc03', now(), now()),
     ('d0000000-dddd-dddd-dddd-dddddddddd09', 'Scarf Polos',
      'Scarf polos bahan ceruti lembut, tidak gerah. Tersedia 5 warna.', 28000, 90, 64,
-     'https://res.cloudinary.com/dhpxtqzt5/image/upload/scarf_polos.png',
+     'https://res.cloudinary.com/dhpxtqzt5/image/upload/scarf_polos.png', 'FASHION',
      'c0000000-cccc-cccc-cccc-cccccccccc03', now(), now())
 ON CONFLICT DO NOTHING;
 
