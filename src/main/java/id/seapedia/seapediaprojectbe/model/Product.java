@@ -33,6 +33,18 @@ public class Product {
     @Column(nullable = false)
     private Integer stock;
 
+    @Column(name = "image_url", length = 512)
+    private String imageUrl;
+
+    @Column(name = "sold_count", nullable = false)
+    @Builder.Default
+    private Integer soldCount = 0;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private ProductCategory category = ProductCategory.LAINNYA;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

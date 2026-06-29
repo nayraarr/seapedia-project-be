@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: seapedia
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_PASSWORD: seapedia123
     ports:
       - "5432:5432"
     volumes:
@@ -29,8 +29,8 @@ services:
     environment:
       DATABASE_URL: jdbc:postgresql://db:5432/seapedia
       DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: yourpassword
-      JWT_SECRET: ganti-dengan-hasil-openssl-rand-base64-32
+      DATABASE_PASSWORD: seapedia123
+      JWT_SECRET: BismillahLolosSeleksiSEACompfest18YaPlissYaAllahhh
       JWT_EXPIRATION: 900000
       ALLOWED_ORIGINS: http://localhost:3000
     depends_on:

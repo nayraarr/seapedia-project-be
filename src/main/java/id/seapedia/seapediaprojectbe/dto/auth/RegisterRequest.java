@@ -17,6 +17,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
+    @NotBlank(message = "Full name is required")
+    @Size(max = 100, message = "Full name max 100 characters")
+    private String fullName;
+
     @NotBlank(message = "Username is required")
     @Size(max = 50, message = "Username max 50 characters")
     private String username;

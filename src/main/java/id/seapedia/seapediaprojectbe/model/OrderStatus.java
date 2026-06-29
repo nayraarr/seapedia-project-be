@@ -3,6 +3,9 @@ package id.seapedia.seapediaprojectbe.model;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Map;
+import java.util.Set;
+
 @Getter
 @AllArgsConstructor
 public enum OrderStatus {
@@ -13,4 +16,16 @@ public enum OrderStatus {
     DIKEMBALIKAN("Dikembalikan");
 
     private final String label;
+
+    private static final Map<OrderStatus, Set<OrderStatus>> VALID_TRANSITIONS = Map.of(
+        SEDANG_DIKEMAS,    Set.of(MENUNGGU_PENGIRIM, DIKEMBALIKAN),
+        MENUNGGU_PENGIRIM, Set.of(SEDANG_DIKIRIM, DIKEMBALIKAN),
+        SEDANG_DIKIRIM,    Set.of(SELESAI, DIKEMBALIKAN),
+        SELESAI,           Set.of(),
+        DIKEMBALIKAN,      Set.of()
+    );
+
+    public boolean canTransitionTo(OrderStatus target) {
+        return VALID_TRANSITIONS.getOrDefault(this, Set.of()).contains(target);
+    }
 }

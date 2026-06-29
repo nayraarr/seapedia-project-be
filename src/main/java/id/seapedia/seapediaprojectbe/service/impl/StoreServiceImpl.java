@@ -63,7 +63,6 @@ public class StoreServiceImpl implements StoreService {
                     return new ResourceNotFoundException("Store not found");
                 });
 
-        // cek uniqueness hanya kalau nama berubah
         if (!store.getName().equals(request.getName()) &&
                 storeRepository.existsByName(request.getName())) {
             log.warn("[updateStore]  store name already taken: name={}", request.getName());
@@ -122,7 +121,7 @@ public class StoreServiceImpl implements StoreService {
                 .name(store.getName())
                 .description(store.getDescription())
                 .ownerId(store.getOwnerId())
-                .ownerUsername(ownerUsername) // <-- tambahan
+                .ownerUsername(ownerUsername)
                 .createdAt(store.getCreatedAt())
                 .updatedAt(store.getUpdatedAt())
                 .build();

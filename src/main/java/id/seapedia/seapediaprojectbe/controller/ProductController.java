@@ -2,6 +2,7 @@ package id.seapedia.seapediaprojectbe.controller;
 
 import id.seapedia.seapediaprojectbe.dto.common.ApiResponse;
 import id.seapedia.seapediaprojectbe.dto.product.ProductResponse;
+import id.seapedia.seapediaprojectbe.model.ProductCategory;
 import id.seapedia.seapediaprojectbe.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +21,15 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProducts() {
-        log.info("[GET /api/products]  request received");
-        List<ProductResponse> data = productService.getAllProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProducts(
+            @RequestParam(required = false) ProductCategory category) {
+        log.info("[GET /api/products]  request received, category={}", category);
+        List<ProductResponse> data;
+        if (category != null) {
+            data = productService.getProductsByCategory(category);
+        } else {
+            data = productService.getAllProducts();
+        }
         log.info("[GET /api/products]  returning {} products", data.size());
         return ResponseEntity.ok(ApiResponse.success("Products fetched", data));
     }
@@ -33,6 +40,15 @@ public class ProductController {
         ProductResponse data = productService.getProductById(id);
         log.info("[GET /api/products/{}]  returning product name={}", id, data.getName());
         return ResponseEntity.ok(ApiResponse.success("Product fetched", data));
+    }
+
+    @GetMapping("/{id}/similar")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getSimilarProducts(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "8") int limit) {
+        log.info("[GET /api/products/{}/similar]  request received, limit={}", id, limit);
+        List<ProductResponse> data = productService.getSimilarProducts(id, limit);
+        return ResponseEntity.ok(ApiResponse.success("Similar products fetched", data));
     }
 
     @GetMapping("/store/{storeId}")
