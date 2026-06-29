@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import id.seapedia.seapediaprojectbe.model.ProductCategory;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ public class ProductResponse {
     private Integer stock;
     private String imageUrl;
     private Integer soldCount;
+    private ProductCategory category;
     private UUID storeId;
     private String storeName;
     private LocalDateTime createdAt;

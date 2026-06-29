@@ -49,6 +49,14 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Profile fetched", data));
     }
 
+    @PatchMapping("/me")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> updateProfile(
+            @Valid @RequestBody UpdateProfileRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        UserProfileResponse data = authService.updateProfile(userDetails.getUserId(), request);
+        return ResponseEntity.ok(ApiResponse.success("Profile updated", data));
+    }
+
     @GetMapping("/me/summary")
     public ResponseEntity<ApiResponse<FinancialSummaryResponse>> getFinancialSummary(
             @AuthenticationPrincipal CustomUserDetails userDetails) {

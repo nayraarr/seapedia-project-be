@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -22,13 +23,14 @@ public class AppReviewServiceImpl implements AppReviewService {
 
     @Override
     @Transactional
-    public ReviewResponse createReview(ReviewRequest request) {
-        log.info("[createReview] entry: reviewerName={} rating={}", request.getReviewerName(), request.getRating());
+    public ReviewResponse createReview(ReviewRequest request, String reviewerName) {
+        log.info("[createReview] entry: reviewerName={} rating={}", reviewerName, request.getRating());
 
         AppReview review = AppReview.builder()
-                .reviewerName(SanitizerUtil.clean(request.getReviewerName()))
+                .reviewerName(SanitizerUtil.clean(reviewerName))
                 .rating(request.getRating())
                 .comment(SanitizerUtil.clean(request.getComment()))
+                .createdAt(LocalDateTime.now())
                 .build();
 
         review = appReviewRepository.save(review);
